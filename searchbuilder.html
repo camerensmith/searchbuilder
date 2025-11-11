@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Search Builder</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+    }
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      background: #fff;
+      min-height: 100vh;
+    }
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 0.5rem;
+    }
+    p.subtitle {
+      margin-top: 0;
+      color: #555;
+      margin-bottom: 1rem;
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+    textarea,
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-family: inherit;
+      margin-bottom: 0.4rem;
+    }
+    textarea { resize: vertical; }
+    small {
+      display: block;
+      color: #777;
+      margin-bottom: 0.6rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .checkbox-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 0.3rem;
+    }
+    .checkbox-row label {
+      font-weight: 400;
+    }
+    button {
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background: #f0f0f0;
+      cursor: pointer;
+      font-weight: 600;
+      margin-right: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+    button.primary {
+      background: #1a73e8;
+      color: #fff;
+      border-color: #1a73e8;
+    }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    #outputQuery {
+      font-family: Menlo, Monaco, Consolas, monospace;
+    }
+    .engine-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="engine-row">
+      <div style="flex:1 1 100%">
+        <h1><center>Search Builder</center></h1>
+        <label for="bookmarkUrl">Bookmarks (quick launch)</label>
+        <div class="checkbox-row" style="gap:0.5rem">
+          <input type="text" id="bookmarkUrl" placeholder="https://example.com/jobs" />
+          <button id="addBookmarkBtn">+ Add Bookmark</button>
+        </div>
+        <div id="bookmarkList" class="checkbox-row" style="gap:0.5rem; flex-wrap:wrap"></div>
+
+        <div style="margin-top:1rem">
+          <label for="savedQueries">Saved queries</label>
+          <div class="checkbox-row" style="gap:0.5rem">
+            <select id="savedQueries" style="min-width:220px">
+              <option value="">-- Select saved --</option>
+            </select>
+            <input type="text" id="saveName" placeholder="Name this query" style="flex:1 1 200px" />
+            <button id="saveBtn">Save</button>
+            <button id="loadBtn" disabled>Load</button>
+            <button id="deleteBtn" disabled>Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <p class="subtitle">
+      Fill out the fields and hit <strong>Search</strong>. It’ll open Google, Bing, or DuckDuckGo with your Boolean query already filled in.
+    </p>
+
+    <div class="grid">
+      <!-- Job titles -->
+      <div>
+        <label for="titles">Job titles (one per line)</label>
+        <textarea id="titles" rows="8" placeholder="e.g.
+Design Manager
+Product Design Manager
+Product Owner"></textarea>
+        <small>Each line becomes part of an OR group.</small>
+      </div>
+
+      <!-- Must-includes + companies -->
+      <div>
+        <label for="mustInclude">Must-include keywords (comma or newline)</label>
+        <textarea id="mustInclude" rows="4" placeholder="e.g. fintech, healthcare, 'design systems'"></textarea>
+        <small>E.g. company name, team name, niche skill.</small>
+
+        <div class="checkbox-row">
+          <label for="requireCompanies">
+            <input type="checkbox" id="requireCompanies" /> Make companies required
+          </label>
+        </div>
+        <label for="companies">Specific companies</label>
+        <textarea id="companies" rows="4" placeholder="e.g.
+Microsoft
+Amazon
+Distinctly"></textarea>
+        <small>One per line or comma-separated. If 'Make companies required' is off, companies will be ignored.</small>
+      </div>
+
+      <!-- Sites -->
+      <div>
+        <label for="sites">Restrict to sites (one per line)</label>
+        <div class="checkbox-row" id="sitePresetsRow">
+          <label><input type="checkbox" id="siteIndeed" /> indeed.com/jobs</label>
+          <label><input type="checkbox" id="siteLinkedIn" /> linkedin.com/jobs</label>
+          <label><input type="checkbox" id="siteDice" /> dice.com/jobs</label>
+          <label><input type="checkbox" id="siteBuiltIn" /> builtin.com/jobs</label>
+          <label><input type="checkbox" id="siteGoogleJobs" /> jobs.google.com</label>
+          <label><input type="checkbox" id="siteRobertHalf" /> roberthalf.com/us/en/jobs</label>
+        </div>
+        <textarea id="sites" rows="5" placeholder="e.g.
+linkedin.com
+indeed.com
+glassdoor.com"></textarea>
+        <small>Examples: linkedin.com, indeed.com, glassdoor.com, etc.</small>
+      </div>
+
+      <!-- Work mode + location -->
+      <div>
+        <label>Work mode</label>
+        <div class="checkbox-row">
+          <label>
+            <input type="checkbox" id="remote" checked /> Remote
+          </label>
+          <label>
+            <input type="checkbox" id="hybrid" /> Hybrid
+          </label>
+          <label>
+            <input type="checkbox" id="anywhere" /> Anywhere
+          </label>
+        </div>
+        <small>
+          Becomes something like ("remote" OR "work from home" OR "hybrid" ...).
+        </small>
+
+        <label for="location">Location filter (optional)</label>
+        <input
+          type="text"
+          id="location"
+          placeholder="City, region, or ZIP (e.g. Seattle, London, 94105)"
+        />
+        <small>Useful for Hybrid or specific city: "London", "10001", etc.</small>
+      </div>
+
+      <!-- Exclusions -->
+      <div>
+        <label>Exclusions</label>
+        <div class="checkbox-row">
+          <label>
+            <input type="checkbox" id="excludeInternships" checked /> Filter out internships
+          </label>
+        </div>
+        <div class="checkbox-row">
+          <label>
+            <input type="checkbox" id="excludeNews" checked /> Filter out news
+          </label>
+        </div>
+        <div class="checkbox-row" id="excludePresetsRow">
+          <button type="button" class="" data-exclude-chip="contract">No contracts</button>
+          <button type="button" class="" data-exclude-chip="freelance">No freelancers</button>
+          <button type="button" class="" data-exclude-chip="agency">No agencies</button>
+          <button type="button" class="" data-exclude-chip="junior">No juniors</button>
+          <button type="button" class="" data-exclude-chip="entry level">No entry level</button>
+          <button type="button" class="" data-exclude-chip="1099">No 1099</button>
+        </div>
+        <textarea
+          id="extraExclude"
+          rows="4"
+          placeholder="Other keywords to exclude (e.g. junior, entry level, contract)"
+        ></textarea>
+        <small>One per line or comma-separated. Each becomes -keyword.</small>
+      </div>
+
+      <!-- Time range & engine -->
+      <div>
+        <label for="timeRange">Time range (Google-only)</label>
+        <select id="timeRange">
+          <option value="any">Any time</option>
+          <option value="24h">Past 24 hours</option>
+          <option value="3days">Past 3 days</option>
+          <option value="week">Past week</option>
+        </select>
+        <small>
+          Uses Google's <code>tbs</code> parameter. Bing / DuckDuckGo will just ignore this and use the same query.
+        </small>
+
+        <label for="operatorMode">Operator mode (between groups)</label>
+        <select id="operatorMode">
+          <option value="AND">AND (explicit)</option>
+          <option value="SPACE">Implicit AND (space)</option>
+          <option value="OR">OR</option>
+        </select>
+        <small>Controls how title/keywords/site/location groups are combined.</small>
+      </div>
+    </div>
+
+    <!-- Engine choice + actions -->
+    <div class="engine-row">
+      <div>
+        <label for="engine">Search engine</label>
+        <select id="engine">
+          <option value="google">Google</option>
+          <option value="bing">Bing</option>
+          <option value="ddg">DuckDuckGo</option>
+        </select>
+      </div>
+
+      <div>
+        <button id="searchBtn" class="primary">Search</button>
+        <button id="copyBtn" disabled>Copy Boolean query</button>
+        <button id="clearBtn">Clear</button>
+      </div>
+
+    </div>
+
+    <!-- Output -->
+    <div>
+      <label for="outputQuery">Generated Boolean query</label>
+      <textarea id="outputQuery" rows="6" readonly></textarea>
+    </div>
+  </div>
+
+  <script>
+    // Helpers
+    function parseLines(text) {
+      return text
+        .split(/\r?\n/)
+        .map(function (l) { return l.trim(); })
+        .filter(Boolean);
+    }
+
+    function parseList(text) {
+      return text
+        .split(/[\n,]+/)
+        .map(function (l) { return l.trim(); })
+        .filter(Boolean);
+    }
+
+    function quoteIfNeeded(term) {
+      if (!term) return "";
+      return /\s/.test(term) ? '"' + term + '"' : term;
+    }
+
+    function buildTimeRangeParam(timeRange) {
+      if (timeRange === "any") return "";
+      if (timeRange === "24h") return "qdr:d";
+      if (timeRange === "week") return "qdr:w";
+      if (timeRange === "3days") {
+        var now = new Date();
+        var min = new Date();
+        min.setDate(now.getDate() - 3);
+
+        function format(d) {
+          var mm = String(d.getMonth() + 1).padStart(2, "0");
+          var dd = String(d.getDate()).padStart(2, "0");
+          var yyyy = d.getFullYear();
+          return mm + "/" + dd + "/" + yyyy;
+        }
+
+        return "cdr:1,cd_min:" + format(min) + ",cd_max:" + format(now);
+      }
+      return "";
+    }
+
+    function buildBooleanQuery() {
+      var titlesText = document.getElementById("titles").value;
+      var mustIncludeText = document.getElementById("mustInclude").value;
+      var companiesText = document.getElementById("companies").value;
+      var sitesText = document.getElementById("sites").value;
+      var remote = document.getElementById("remote").checked;
+      var hybrid = document.getElementById("hybrid").checked;
+      var anywhere = document.getElementById("anywhere").checked;
+      var siteIndeed = document.getElementById("siteIndeed") ? document.getElementById("siteIndeed").checked : false;
+      var siteLinkedIn = document.getElementById("siteLinkedIn") ? document.getElementById("siteLinkedIn").checked : false;
+      var siteDice = document.getElementById("siteDice") ? document.getElementById("siteDice").checked : false;
+      var siteBuiltIn = document.getElementById("siteBuiltIn") ? document.getElementById("siteBuiltIn").checked : false;
+      var siteGoogleJobs = document.getElementById("siteGoogleJobs") ? document.getElementById("siteGoogleJobs").checked : false;
+      var siteRobertHalf = document.getElementById("siteRobertHalf") ? document.getElementById("siteRobertHalf").checked : false;
+      var locationText = document.getElementById("location").value;
+      var excludeInternships = document.getElementById("excludeInternships").checked;
+      var excludeNews = document.getElementById("excludeNews").checked;
+      var extraExcludeText = document.getElementById("extraExclude").value;
+      var requireCompanies = document.getElementById("requireCompanies").checked;
+      var operatorMode = document.getElementById("operatorMode").value;
+
+      var parts = [];
+      var negativeParts = [];
+
+      // Titles
+      var titles = parseLines(titlesText);
+      if (titles.length) {
+        parts.push("(" + titles.map(quoteIfNeeded).join(" OR ") + ")");
+      }
+
+      // Must-include
+      var mustInclude = parseList(mustIncludeText);
+      if (mustInclude.length) {
+        parts.push("(" + mustInclude.map(quoteIfNeeded).join(" OR ") + ")");
+      }
+
+      // Companies
+      var companies = parseList(companiesText);
+      if (requireCompanies && companies.length) {
+        parts.push("(" + companies.map(quoteIfNeeded).join(" OR ") + ")");
+      }
+
+      // Work mode
+      var workModeTokens = [];
+      if (remote) workModeTokens.push('"remote"', '"work from home"', '"WFH"');
+      if (hybrid) workModeTokens.push('"hybrid"');
+      if (anywhere) workModeTokens.push('"anywhere"', '"work from anywhere"');
+      if (workModeTokens.length) {
+        parts.push("(" + workModeTokens.join(" OR ") + ")");
+      }
+
+      // Location
+      if (locationText.trim()) {
+        var locList = parseList(locationText);
+        if (locList.length) {
+          parts.push("(" + locList.map(quoteIfNeeded).join(" OR ") + ")");
+        }
+      }
+
+      // Sites (presets + custom)
+      var presetSites = [];
+      if (siteIndeed) presetSites.push("indeed.com/jobs");
+      if (siteLinkedIn) presetSites.push("linkedin.com/jobs");
+      if (siteDice) presetSites.push("dice.com/jobs");
+      if (siteBuiltIn) presetSites.push("builtin.com/jobs");
+      if (siteGoogleJobs) presetSites.push("jobs.google.com");
+      if (siteRobertHalf) presetSites.push("roberthalf.com/us/en/jobs");
+      var customSites = parseLines(sitesText);
+      var sites = presetSites.concat(customSites);
+      if (sites.length) {
+        var siteQuery = "(" + sites
+          .map(function (s) { return "site:" + s.replace(/^site:/i, "").trim(); })
+          .join(" OR ") + ")";
+        parts.push(siteQuery);
+      }
+
+      // Exclusions
+      if (excludeInternships) {
+        negativeParts.push(
+          "-internship",
+          "-intern",
+          '-"unpaid internship"',
+          '-"summer internship"'
+        );
+      }
+      if (excludeNews) {
+        negativeParts.push(
+          "-news",
+          '-"news article"',
+          "-headline"
+        );
+      }
+
+      var extraExcludes = parseList(extraExcludeText);
+      extraExcludes.forEach(function (term) {
+        term = term.replace(/^-+/, "");
+        if (!term) return;
+        negativeParts.push("-" + quoteIfNeeded(term));
+      });
+
+      var joiner = " AND ";
+      if (operatorMode === "SPACE") {
+        joiner = " ";
+      } else if (operatorMode === "OR") {
+        joiner = " OR ";
+      }
+      var query = parts.join(joiner);
+      if (negativeParts.length) {
+        query = query ? query + " " + negativeParts.join(" ") : negativeParts.join(" ");
+      }
+
+      return query;
+    }
+
+    (function () {
+      var searchBtn = document.getElementById("searchBtn");
+      var copyBtn = document.getElementById("copyBtn");
+      var outputQuery = document.getElementById("outputQuery");
+      var engineSelect = document.getElementById("engine");
+      var timeRangeSelect = document.getElementById("timeRange");
+      var clearBtn = document.getElementById("clearBtn");
+      var savedSelect = document.getElementById("savedQueries");
+      var saveNameInput = document.getElementById("saveName");
+      var saveBtn = document.getElementById("saveBtn");
+      var loadBtn = document.getElementById("loadBtn");
+      var deleteBtn = document.getElementById("deleteBtn");
+      var excludePresetsRow = document.getElementById("excludePresetsRow");
+      var addBookmarkBtn = document.getElementById("addBookmarkBtn");
+      var bookmarkUrlInput = document.getElementById("bookmarkUrl");
+      var bookmarkList = document.getElementById("bookmarkList");
+
+      var lastQuery = "";
+
+      function refreshQueryPreview() {
+        var q = buildBooleanQuery();
+        lastQuery = q || "";
+        outputQuery.value = lastQuery;
+        copyBtn.disabled = !lastQuery;
+      }
+
+      function getFormState() {
+        return {
+          titles: document.getElementById("titles").value,
+          mustInclude: document.getElementById("mustInclude").value,
+          companies: document.getElementById("companies").value,
+          requireCompanies: document.getElementById("requireCompanies").checked,
+          sites: document.getElementById("sites").value,
+          siteIndeed: document.getElementById("siteIndeed") ? document.getElementById("siteIndeed").checked : false,
+          siteLinkedIn: document.getElementById("siteLinkedIn") ? document.getElementById("siteLinkedIn").checked : false,
+          siteDice: document.getElementById("siteDice") ? document.getElementById("siteDice").checked : false,
+          siteBuiltIn: document.getElementById("siteBuiltIn") ? document.getElementById("siteBuiltIn").checked : false,
+          siteGoogleJobs: document.getElementById("siteGoogleJobs") ? document.getElementById("siteGoogleJobs").checked : false,
+          siteRobertHalf: document.getElementById("siteRobertHalf") ? document.getElementById("siteRobertHalf").checked : false,
+          remote: document.getElementById("remote").checked,
+          hybrid: document.getElementById("hybrid").checked,
+          anywhere: document.getElementById("anywhere").checked,
+          location: document.getElementById("location").value,
+          excludeInternships: document.getElementById("excludeInternships").checked,
+          excludeNews: document.getElementById("excludeNews").checked,
+          extraExclude: document.getElementById("extraExclude").value,
+          operatorMode: document.getElementById("operatorMode").value,
+          engine: engineSelect.value,
+          timeRange: timeRangeSelect.value
+        };
+      }
+
+      function setFormState(state) {
+        document.getElementById("titles").value = state.titles || "";
+        document.getElementById("mustInclude").value = state.mustInclude || "";
+        document.getElementById("companies").value = state.companies || "";
+        document.getElementById("requireCompanies").checked = !!state.requireCompanies;
+        document.getElementById("sites").value = state.sites || "";
+        if (document.getElementById("siteIndeed")) document.getElementById("siteIndeed").checked = !!state.siteIndeed;
+        if (document.getElementById("siteLinkedIn")) document.getElementById("siteLinkedIn").checked = !!state.siteLinkedIn;
+        if (document.getElementById("siteDice")) document.getElementById("siteDice").checked = !!state.siteDice;
+        if (document.getElementById("siteBuiltIn")) document.getElementById("siteBuiltIn").checked = !!state.siteBuiltIn;
+        if (document.getElementById("siteGoogleJobs")) document.getElementById("siteGoogleJobs").checked = !!state.siteGoogleJobs;
+        if (document.getElementById("siteRobertHalf")) document.getElementById("siteRobertHalf").checked = !!state.siteRobertHalf;
+        document.getElementById("remote").checked = !!state.remote;
+        document.getElementById("hybrid").checked = !!state.hybrid;
+        document.getElementById("anywhere").checked = !!state.anywhere;
+        document.getElementById("location").value = state.location || "";
+        document.getElementById("excludeInternships").checked = state.excludeInternships !== false;
+        document.getElementById("excludeNews").checked = state.excludeNews !== false;
+        document.getElementById("extraExclude").value = state.extraExclude || "";
+        document.getElementById("operatorMode").value = state.operatorMode || "AND";
+        engineSelect.value = state.engine || "google";
+        timeRangeSelect.value = state.timeRange || "any";
+      }
+
+      function loadSavedQueries() {
+        var saved = JSON.parse(localStorage.getItem("savedQueries") || "{}");
+        // reset options
+        while (savedSelect.options.length > 1) savedSelect.remove(1);
+        Object.keys(saved).forEach(function (name) {
+          var opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          savedSelect.appendChild(opt);
+        });
+        var hasSelection = savedSelect.value && saved[savedSelect.value];
+        loadBtn.disabled = !hasSelection;
+        deleteBtn.disabled = !hasSelection;
+      }
+
+      function clearForm() {
+        setFormState({
+          titles: "",
+          mustInclude: "",
+          companies: "",
+          requireCompanies: false,
+          sites: "",
+          remote: document.getElementById("remote").defaultChecked,
+          hybrid: false,
+          anywhere: false,
+          location: "",
+          excludeInternships: document.getElementById("excludeInternships").defaultChecked,
+          excludeNews: document.getElementById("excludeNews").defaultChecked,
+          extraExclude: "",
+          operatorMode: "AND",
+          engine: "google",
+          timeRange: "any"
+        });
+        refreshQueryPreview();
+      }
+
+      searchBtn.addEventListener("click", function () {
+        var query = buildBooleanQuery();
+        lastQuery = query || "";
+        outputQuery.value = lastQuery;
+        copyBtn.disabled = !lastQuery;
+
+        if (!lastQuery) {
+          alert("Query is empty – add at least one title or keyword.");
+          return;
+        }
+
+        var engine = engineSelect.value;
+        var url = "";
+
+        if (engine === "google") {
+          var base = "https://www.google.com/search";
+          var tbs = buildTimeRangeParam(timeRangeSelect.value);
+          url = base + "?q=" + encodeURIComponent(lastQuery);
+          if (tbs) url += "&tbs=" + encodeURIComponent(tbs);
+        } else if (engine === "bing") {
+          url = "https://www.bing.com/search?q=" + encodeURIComponent(lastQuery);
+        } else if (engine === "ddg") {
+          url = "https://duckduckgo.com/?q=" + encodeURIComponent(lastQuery);
+        }
+
+        window.open(url, "_blank", "noopener,noreferrer");
+      });
+
+      copyBtn.addEventListener("click", function () {
+        if (!lastQuery) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(lastQuery).then(
+            function () { alert("Query copied to clipboard!"); },
+            function () { alert("Could not copy to clipboard, sorry 😅"); }
+          );
+        } else {
+          outputQuery.focus();
+          outputQuery.select();
+          alert("Clipboard API not available. Query selected; press Ctrl+C / Cmd+C to copy.");
+        }
+      });
+
+      // Clear
+      clearBtn.addEventListener("click", function () {
+        clearForm();
+      });
+
+      // Exclusion preset chips
+      excludePresetsRow.addEventListener("click", function (e) {
+        var chip = e.target && e.target.getAttribute("data-exclude-chip");
+        if (!chip) return;
+        var field = document.getElementById("extraExclude");
+        var list = parseList(field.value);
+        if (!list.some(function (t) { return t.toLowerCase() === chip.toLowerCase(); })) {
+          list.push(chip);
+          field.value = list.join(", ");
+          refreshQueryPreview();
+        }
+      });
+
+      // Saved queries
+      saveBtn.addEventListener("click", function () {
+        var name = (saveNameInput.value || "").trim();
+        if (!name) {
+          alert("Please provide a name for this query.");
+          return;
+        }
+        var saved = JSON.parse(localStorage.getItem("savedQueries") || "{}");
+        saved[name] = getFormState();
+        localStorage.setItem("savedQueries", JSON.stringify(saved));
+        loadSavedQueries();
+        savedSelect.value = name;
+        loadBtn.disabled = false;
+        deleteBtn.disabled = false;
+        alert("Saved!");
+      });
+
+      savedSelect.addEventListener("change", function () {
+        var saved = JSON.parse(localStorage.getItem("savedQueries") || "{}");
+        var sel = savedSelect.value;
+        var has = sel && saved[sel];
+        loadBtn.disabled = !has;
+        deleteBtn.disabled = !has;
+      });
+
+      loadBtn.addEventListener("click", function () {
+        var saved = JSON.parse(localStorage.getItem("savedQueries") || "{}");
+        var sel = savedSelect.value;
+        if (!sel || !saved[sel]) return;
+        setFormState(saved[sel]);
+        refreshQueryPreview();
+      });
+
+      deleteBtn.addEventListener("click", function () {
+        var saved = JSON.parse(localStorage.getItem("savedQueries") || "{}");
+        var sel = savedSelect.value;
+        if (!sel || !saved[sel]) return;
+        delete saved[sel];
+        localStorage.setItem("savedQueries", JSON.stringify(saved));
+        loadSavedQueries();
+        savedSelect.value = "";
+        loadBtn.disabled = true;
+        deleteBtn.disabled = true;
+      });
+
+      // Live preview: listen to changes
+      var liveInputs = [
+        "titles","mustInclude","companies","requireCompanies","sites",
+        "siteIndeed","siteLinkedIn","siteDice","siteBuiltIn","siteGoogleJobs","siteRobertHalf",
+        "remote","hybrid","anywhere","location",
+        "excludeInternships","excludeNews","extraExclude",
+        "operatorMode","engine","timeRange"
+      ];
+      liveInputs.forEach(function (id) {
+        var el = document.getElementById(id);
+        var evt = (el.tagName === "TEXTAREA" || el.tagName === "INPUT") ? "input" : "change";
+        el.addEventListener(evt, refreshQueryPreview);
+        if (el.type === "checkbox") {
+          el.addEventListener("change", refreshQueryPreview);
+        }
+      });
+
+      // Initialize
+      loadSavedQueries();
+      refreshQueryPreview();
+
+      // Bookmarks
+      function normalizeUrl(u) {
+        try {
+          if (!/^https?:\/\//i.test(u)) u = "https://" + u;
+          var url = new URL(u);
+          return url.origin;
+        } catch (e) {
+          return "";
+        }
+      }
+      function domainFromUrl(u) {
+        try {
+          var url = new URL(u);
+          return url.hostname;
+        } catch (e) {
+          return "";
+        }
+      }
+      function renderBookmarks() {
+        var list = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+        bookmarkList.innerHTML = "";
+        list.forEach(function (origin) {
+          var a = document.createElement("a");
+          a.href = origin;
+          a.target = "_blank";
+          a.rel = "noopener noreferrer";
+          a.title = origin;
+          a.style.display = "inline-flex";
+          a.style.alignItems = "center";
+          a.style.gap = "0.25rem";
+          var img = document.createElement("img");
+          var domain = domainFromUrl(origin);
+          img.src = "https://www.google.com/s2/favicons?sz=32&domain=" + encodeURIComponent(domain);
+          img.width = 16;
+          img.height = 16;
+          img.alt = domain + " favicon";
+          var span = document.createElement("span");
+          span.textContent = domain;
+          a.appendChild(img);
+          a.appendChild(span);
+          bookmarkList.appendChild(a);
+        });
+      }
+      if (addBookmarkBtn) {
+        addBookmarkBtn.addEventListener("click", function () {
+          var raw = (bookmarkUrlInput.value || "").trim();
+          var norm = normalizeUrl(raw);
+          if (!norm) {
+            alert("Please enter a valid URL.");
+            return;
+          }
+          var list = JSON.parse(localStorage.getItem("bookmarks") || "[]");
+          if (list.indexOf(norm) === -1) {
+            list.push(norm);
+            localStorage.setItem("bookmarks", JSON.stringify(list));
+          }
+          bookmarkUrlInput.value = "";
+          renderBookmarks();
+        });
+      }
+      renderBookmarks();
+    })();
+  </script>
+</body>
+</html>
