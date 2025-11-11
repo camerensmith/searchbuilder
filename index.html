@@ -5,140 +5,323 @@
   <link rel="icon" type="image/png" href="https://i.postimg.cc/34M4mLpk/q.png" />
   <title>Search Builder</title>
   <style>
+    :root {
+      --bg-page: #eef2ff;
+      --bg-card: #ffffff;
+      --border-card: #e5e7f1;
+      --shadow-card: 0 20px 45px rgba(15, 23, 42, 0.08);
+      --text-primary: #1f2937;
+      --text-muted: #6b7280;
+      --accent: #1a73e8;
+      --accent-soft: rgba(26, 115, 232, 0.16);
+    }
     * { box-sizing: border-box; }
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f5f5f5;
+      background: linear-gradient(135deg, #eef2ff 0%, #f9fbff 100%);
       margin: 0;
+      color: var(--text-primary);
     }
     .container {
-      max-width: 960px;
+      max-width: 1080px;
       margin: 0 auto;
-      padding: 1.5rem;
-      background: #fff;
+      padding: 2.5rem 1.5rem 4rem;
       min-height: 100vh;
     }
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 0.5rem;
+    .page-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .page-header h1 {
+      font-size: 2.25rem;
+      margin: 0 0 0.5rem;
+      font-weight: 700;
     }
     p.subtitle {
-      margin-top: 0;
-      color: #555;
-      margin-bottom: 1rem;
+      margin: 0 auto;
+      max-width: 720px;
+      color: var(--text-muted);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    .section-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 18px;
+      padding: 1.6rem;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 1.8rem;
+    }
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 0 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-subtitle {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 1.2rem 0 0.75rem;
+      color: var(--text-primary);
     }
     label {
       font-weight: 600;
       display: block;
-      margin-bottom: 0.25rem;
+      margin-bottom: 0.4rem;
+    }
+    label.section-title {
+      font-size: 1.15rem;
+      margin-bottom: 1rem;
     }
     textarea,
     input[type="text"],
     select {
       width: 100%;
-      padding: 0.5rem;
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid #d5dce8;
+      border-radius: 12px;
       font-family: inherit;
-      margin-bottom: 0.4rem;
+      margin-bottom: 0.65rem;
+      background: #f9fbff;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     }
-    textarea { resize: vertical; }
+    textarea {
+      resize: vertical;
+      min-height: 90px;
+    }
+    textarea:focus,
+    input[type="text"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background: #fff;
+    }
     small {
       display: block;
-      color: #777;
-      margin-bottom: 0.6rem;
+      color: var(--text-muted);
+      margin-bottom: 0.8rem;
+      line-height: 1.5;
     }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.8rem;
+    }
+    .grid .section-card {
+      margin-bottom: 0;
     }
     .checkbox-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 0.3rem;
+      gap: 0.75rem;
+      margin-bottom: 0.9rem;
     }
     .checkbox-row label {
-      font-weight: 400;
-    }
-    button {
-      padding: 0.6rem 1.2rem;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      background: #f0f0f0;
+      font-weight: 500;
+      background: #f2f6ff;
+      border: 1px solid #dbe5ff;
+      border-radius: 999px;
+      padding: 0.35rem 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: background 0.2s ease, border-color 0.2s ease;
       cursor: pointer;
-      font-weight: 600;
-      margin-right: 0.5rem;
+    }
+    .checkbox-row label:hover {
+      border-color: var(--accent);
+      background: rgba(26, 115, 232, 0.12);
+    }
+    .checkbox-row label input {
+      margin: 0;
+    }
+    .checkbox-row button {
+      border-radius: 999px;
+      padding: 0.4rem 0.9rem;
+      margin: 0;
+      font-size: 0.92rem;
+    }
+    .toolbar-row,
+    .saved-queries__row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+      align-items: center;
+    }
+    .toolbar-row input[type="text"] {
+      flex: 1 1 260px;
+      margin-bottom: 0;
+    }
+    .toolbar-row button {
+      margin: 0;
+    }
+    #bookmarkList {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
       margin-bottom: 0.5rem;
     }
+    #bookmarkList:empty::before {
+      content: "No bookmarks yet. Add one above to keep it handy.";
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    #bookmarkList a {
+      background: #f1f5ff;
+      border: 1px solid #dbe3f8;
+      border-radius: 12px;
+      padding: 0.45rem 0.75rem;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    #bookmarkList a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 24px rgba(15, 23, 42, 0.12);
+    }
+    #bookmarkList img {
+      border-radius: 50%;
+      background: #fff;
+    }
+    .saved-queries__row select {
+      flex: 1 1 200px;
+      min-width: 200px;
+    }
+    .saved-queries__row input[type="text"] {
+      flex: 2 1 240px;
+      margin-bottom: 0;
+    }
+    button {
+      padding: 0.65rem 1.15rem;
+      border-radius: 12px;
+      border: 1px solid #d5dce8;
+      background: #f7f9ff;
+      cursor: pointer;
+      font-weight: 600;
+      margin-right: 0.3rem;
+      margin-bottom: 0.3rem;
+      transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    }
+    button:hover:not(:disabled) {
+      background: #edf3ff;
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(26, 115, 232, 0.15);
+    }
     button.primary {
-      background: #1a73e8;
+      background: var(--accent);
       color: #fff;
-      border-color: #1a73e8;
+      border-color: var(--accent);
+    }
+    button.primary:hover:not(:disabled) {
+      background: #0f5ad7;
     }
     button:disabled {
       cursor: not-allowed;
       opacity: 0.6;
+      box-shadow: none;
+      transform: none;
     }
     #outputQuery {
       font-family: Menlo, Monaco, Consolas, monospace;
-    }
-    .engine-row {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 12px;
+      min-height: 160px;
       margin-bottom: 0.75rem;
+    }
+    .button-group {
+      display: flex;
       flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .button-group button {
+      margin: 0;
+    }
+    .actions-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+    .actions-grid > div:first-child {
+      flex: 1 1 220px;
+    }
+    .output-card small {
+      margin-bottom: 0;
+    }
+    @media (max-width: 680px) {
+      .container {
+        padding: 1.9rem 1rem 3rem;
+      }
+      .section-card {
+        padding: 1.3rem;
+      }
+      .actions-grid {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .button-group {
+        width: 100%;
+        justify-content: stretch;
+      }
+      .button-group button {
+        flex: 1 1 auto;
+      }
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="engine-row">
-      <div style="flex:1 1 100%">
-        <h1><center>Search Builder</center></h1>
-        <label for="bookmarkUrl">Bookmarks (quick launch)</label>
-        <div class="checkbox-row" style="gap:0.5rem">
-          <input type="text" id="bookmarkUrl" placeholder="https://example.com/jobs" />
-          <button id="addBookmarkBtn">+ Add Bookmark</button>
-        </div>
-        <div id="bookmarkList" class="checkbox-row" style="gap:0.5rem; flex-wrap:wrap"></div>
+    <header class="page-header">
+      <h1>Search Builder</h1>
+      <p class="subtitle">
+        Fill out the fields and hit <strong>Search</strong>. It’ll open Google, Bing, or DuckDuckGo with your Boolean query already filled in.
+      </p>
+    </header>
 
-        <div style="margin-top:1rem">
-          <label for="savedQueries">Saved queries</label>
-          <div class="checkbox-row" style="gap:0.5rem">
-            <select id="savedQueries" style="min-width:220px">
-              <option value="">-- Select saved --</option>
-            </select>
-            <input type="text" id="saveName" placeholder="Name this query" style="flex:1 1 200px" />
-            <button id="saveBtn">Save</button>
-            <button id="loadBtn" disabled>Load</button>
-            <button id="deleteBtn" disabled>Delete</button>
-          </div>
-        </div>
+    <section class="section-card">
+      <h2 class="section-title">Bookmarks &amp; Saved Queries</h2>
+      <label for="bookmarkUrl">Bookmark a favorite site</label>
+      <div class="toolbar-row">
+        <input type="text" id="bookmarkUrl" placeholder="https://example.com/jobs" />
+        <button id="addBookmarkBtn">+ Add Bookmark</button>
       </div>
-    </div>
+      <div id="bookmarkList" class="bookmark-list"></div>
 
-
-    <p class="subtitle">
-      Fill out the fields and hit <strong>Search</strong>. It’ll open Google, Bing, or DuckDuckGo with your Boolean query already filled in.
-    </p>
+      <h3 class="section-subtitle">Saved queries</h3>
+      <div class="saved-queries__row">
+        <select id="savedQueries">
+          <option value="">-- Select saved --</option>
+        </select>
+        <input type="text" id="saveName" placeholder="Name this query" />
+        <button id="saveBtn">Save</button>
+        <button id="loadBtn" disabled>Load</button>
+        <button id="deleteBtn" disabled>Delete</button>
+      </div>
+    </section>
 
     <div class="grid">
-      <!-- Job titles -->
-      <div>
-        <label for="titles">Job titles (one per line)</label>
+      <section class="section-card">
+        <label class="section-title" for="titles">Job titles (one per line)</label>
         <textarea id="titles" rows="8" placeholder="e.g.
 Design Manager
 Product Design Manager
 Product Owner"></textarea>
         <small>Each line becomes part of an OR group.</small>
-      </div>
-
-      <!-- Must-includes + companies -->
-      <div>
+      </section>
+      <section class="section-card">
+        <h2 class="section-title">Must-have keywords &amp; companies</h2>
         <label for="mustInclude">Must-include keywords (comma or newline)</label>
         <textarea id="mustInclude" rows="4" placeholder="e.g. fintech, healthcare, 'design systems'"></textarea>
         <small>E.g. company name, team name, niche skill.</small>
@@ -154,11 +337,10 @@ Microsoft
 Amazon
 Distinctly"></textarea>
         <small>One per line or comma-separated. If 'Make companies required' is off, companies will be ignored.</small>
-      </div>
-
-      <!-- Sites -->
-      <div>
-        <label for="sites">Restrict to sites (one per line)</label>
+      </section>
+      <section class="section-card">
+        <h2 class="section-title">Target sites</h2>
+        <small>Select common job boards or add your own domains below.</small>
         <div class="checkbox-row" id="sitePresetsRow">
           <label><input type="checkbox" id="siteIndeed" /> indeed.com/jobs</label>
           <label><input type="checkbox" id="siteLinkedIn" /> linkedin.com/jobs</label>
@@ -167,16 +349,15 @@ Distinctly"></textarea>
           <label><input type="checkbox" id="siteGoogleJobs" /> jobs.google.com</label>
           <label><input type="checkbox" id="siteRobertHalf" /> roberthalf.com/us/en/jobs</label>
         </div>
+        <label for="sites">Custom sites (one per line)</label>
         <textarea id="sites" rows="5" placeholder="e.g.
 linkedin.com
 indeed.com
 glassdoor.com"></textarea>
         <small>Examples: linkedin.com, indeed.com, glassdoor.com, etc.</small>
-      </div>
-
-      <!-- Work mode + location -->
-      <div>
-        <label>Work mode</label>
+      </section>
+      <section class="section-card">
+        <h2 class="section-title">Work mode &amp; location</h2>
         <div class="checkbox-row">
           <label>
             <input type="checkbox" id="remote" checked /> Remote
@@ -188,9 +369,7 @@ glassdoor.com"></textarea>
             <input type="checkbox" id="anywhere" /> Anywhere
           </label>
         </div>
-        <small>
-          Becomes something like ("remote" OR "work from home" OR "hybrid" ...).
-        </small>
+        <small>Becomes something like ("remote" OR "work from home" OR "hybrid" ...).</small>
 
         <label for="location">Location filter (optional)</label>
         <input
@@ -199,11 +378,9 @@ glassdoor.com"></textarea>
           placeholder="City, region, or ZIP (e.g. Seattle, London, 94105)"
         />
         <small>Useful for Hybrid or specific city: "London", "10001", etc.</small>
-      </div>
-
-      <!-- Exclusions -->
-      <div>
-        <label>Exclusions</label>
+      </section>
+      <section class="section-card">
+        <h2 class="section-title">Exclusions</h2>
         <div class="checkbox-row">
           <label>
             <input type="checkbox" id="excludeInternships" checked /> Filter out internships
@@ -215,12 +392,12 @@ glassdoor.com"></textarea>
           </label>
         </div>
         <div class="checkbox-row" id="excludePresetsRow">
-          <button type="button" class="" data-exclude-chip="contract">No contracts</button>
-          <button type="button" class="" data-exclude-chip="freelance">No freelancers</button>
-          <button type="button" class="" data-exclude-chip="agency">No agencies</button>
-          <button type="button" class="" data-exclude-chip="junior">No juniors</button>
-          <button type="button" class="" data-exclude-chip="entry level">No entry level</button>
-          <button type="button" class="" data-exclude-chip="1099">No 1099</button>
+          <button type="button" data-exclude-chip="contract">No contracts</button>
+          <button type="button" data-exclude-chip="freelance">No freelancers</button>
+          <button type="button" data-exclude-chip="agency">No agencies</button>
+          <button type="button" data-exclude-chip="junior">No juniors</button>
+          <button type="button" data-exclude-chip="entry level">No entry level</button>
+          <button type="button" data-exclude-chip="1099">No 1099</button>
         </div>
         <textarea
           id="extraExclude"
@@ -228,10 +405,9 @@ glassdoor.com"></textarea>
           placeholder="Other keywords to exclude (e.g. junior, entry level, contract)"
         ></textarea>
         <small>One per line or comma-separated. Each becomes -keyword.</small>
-      </div>
-
-      <!-- Time range & engine -->
-      <div>
+      </section>
+      <section class="section-card">
+        <h2 class="section-title">Search filters</h2>
         <label for="timeRange">Time range (Google-only)</label>
         <select id="timeRange">
           <option value="any">Any time</option>
@@ -250,37 +426,37 @@ glassdoor.com"></textarea>
           <option value="OR">OR</option>
         </select>
         <small>Controls how title/keywords/site/location groups are combined.</small>
-      </div>
+      </section>
     </div>
 
-    <!-- Engine choice + actions -->
-    <div class="engine-row">
-      <div>
-        <label for="engine">Search engine</label>
-        <select id="engine">
-          <option value="google">Google</option>
-          <option value="bing">Bing</option>
-          <option value="ddg">DuckDuckGo</option>
-        </select>
+    <section class="section-card actions-card">
+      <h2 class="section-title">Run your search</h2>
+      <small>Recommended to use Google primarily, other search engines may not support the query in its entirety.</small>
+      <div class="actions-grid">
+        <div>
+          <label for="engine">Search engine</label>
+          <select id="engine">
+            <option value="google">Google</option>
+            <option value="bing">Bing</option>
+            <option value="ddg">DuckDuckGo</option>
+          </select>
+        </div>
+        <div class="button-group">
+          <button id="searchBtn" class="primary">Search</button>
+          <button id="copyBtn" disabled>Copy Boolean query</button>
+          <button id="clearBtn">Clear</button>
+        </div>
       </div>
+    </section>
 
-      <div>
-        <button id="searchBtn" class="primary">Search</button>
-        <button id="copyBtn" disabled>Copy Boolean query</button>
-        <button id="clearBtn">Clear</button>
-      </div>
-
-    </div>
-
-    <!-- Output -->
-    <div>
-      <label for="outputQuery">Generated Boolean query</label>
+    <section class="section-card output-card">
+      <label class="section-title" for="outputQuery">Generated Boolean query</label>
       <textarea id="outputQuery" rows="6" readonly></textarea>
-    </div>
+      <small>Live preview updates as you type.</small>
+    </section>
   </div>
 
   <script>
-    // Helpers
     function parseLines(text) {
       return text
         .split(/\r?\n/)
@@ -345,25 +521,21 @@ glassdoor.com"></textarea>
       var parts = [];
       var negativeParts = [];
 
-      // Titles
       var titles = parseLines(titlesText);
       if (titles.length) {
         parts.push("(" + titles.map(quoteIfNeeded).join(" OR ") + ")");
       }
 
-      // Must-include
       var mustInclude = parseList(mustIncludeText);
       if (mustInclude.length) {
         parts.push("(" + mustInclude.map(quoteIfNeeded).join(" OR ") + ")");
       }
 
-      // Companies
       var companies = parseList(companiesText);
       if (requireCompanies && companies.length) {
         parts.push("(" + companies.map(quoteIfNeeded).join(" OR ") + ")");
       }
 
-      // Work mode
       var workModeTokens = [];
       if (remote) workModeTokens.push('"remote"', '"work from home"', '"WFH"');
       if (hybrid) workModeTokens.push('"hybrid"');
@@ -372,7 +544,6 @@ glassdoor.com"></textarea>
         parts.push("(" + workModeTokens.join(" OR ") + ")");
       }
 
-      // Location
       if (locationText.trim()) {
         var locList = parseList(locationText);
         if (locList.length) {
@@ -380,7 +551,6 @@ glassdoor.com"></textarea>
         }
       }
 
-      // Sites (presets + custom)
       var presetSites = [];
       if (siteIndeed) presetSites.push("indeed.com/jobs");
       if (siteLinkedIn) presetSites.push("linkedin.com/jobs");
@@ -397,7 +567,6 @@ glassdoor.com"></textarea>
         parts.push(siteQuery);
       }
 
-      // Exclusions
       if (excludeInternships) {
         negativeParts.push(
           "-internship",
@@ -513,7 +682,6 @@ glassdoor.com"></textarea>
 
       function loadSavedQueries() {
         var saved = JSON.parse(localStorage.getItem("savedQueries") || "{}");
-        // reset options
         while (savedSelect.options.length > 1) savedSelect.remove(1);
         Object.keys(saved).forEach(function (name) {
           var opt = document.createElement("option");
@@ -589,12 +757,10 @@ glassdoor.com"></textarea>
         }
       });
 
-      // Clear
       clearBtn.addEventListener("click", function () {
         clearForm();
       });
 
-      // Exclusion preset chips
       excludePresetsRow.addEventListener("click", function (e) {
         var chip = e.target && e.target.getAttribute("data-exclude-chip");
         if (!chip) return;
@@ -607,7 +773,6 @@ glassdoor.com"></textarea>
         }
       });
 
-      // Saved queries
       saveBtn.addEventListener("click", function () {
         var name = (saveNameInput.value || "").trim();
         if (!name) {
@@ -652,7 +817,6 @@ glassdoor.com"></textarea>
         deleteBtn.disabled = true;
       });
 
-      // Live preview: listen to changes
       var liveInputs = [
         "titles","mustInclude","companies","requireCompanies","sites",
         "siteIndeed","siteLinkedIn","siteDice","siteBuiltIn","siteGoogleJobs","siteRobertHalf",
@@ -669,11 +833,9 @@ glassdoor.com"></textarea>
         }
       });
 
-      // Initialize
       loadSavedQueries();
       refreshQueryPreview();
 
-      // Bookmarks
       function normalizeUrl(u) {
         try {
           if (!/^https?:\/\//i.test(u)) u = "https://" + u;
