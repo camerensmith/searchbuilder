@@ -520,6 +520,25 @@ glassdoor.com"></textarea>
 
       var parts = [];
       var negativeParts = [];
+      var siteParts = [];
+
+      var presetSites = [];
+      if (siteIndeed) presetSites.push("indeed.com/jobs");
+      if (siteLinkedIn) presetSites.push("linkedin.com/jobs");
+      if (siteDice) presetSites.push("dice.com/jobs");
+      if (siteBuiltIn) presetSites.push("builtin.com/jobs");
+      if (siteGoogleJobs) presetSites.push("jobs.google.com");
+      if (siteRobertHalf) presetSites.push("roberthalf.com/us/en/jobs");
+      var customSites = parseLines(sitesText);
+      var sites = presetSites.concat(customSites);
+      if (sites.length) {
+        siteParts = sites
+          .map(function (s) {
+            var cleanSite = s.replace(/^site:/i, "").trim();
+            return cleanSite ? "site:" + cleanSite : null;
+          })
+          .filter(Boolean);
+      }
 
       var titles = parseLines(titlesText);
       if (titles.length) {
@@ -551,22 +570,6 @@ glassdoor.com"></textarea>
         }
       }
 
-      var presetSites = [];
-      if (siteIndeed) presetSites.push("indeed.com/jobs");
-      if (siteLinkedIn) presetSites.push("linkedin.com/jobs");
-      if (siteDice) presetSites.push("dice.com/jobs");
-      if (siteBuiltIn) presetSites.push("builtin.com/jobs");
-      if (siteGoogleJobs) presetSites.push("jobs.google.com");
-      if (siteRobertHalf) presetSites.push("roberthalf.com/us/en/jobs");
-      var customSites = parseLines(sitesText);
-      var sites = presetSites.concat(customSites);
-      if (sites.length) {
-        var siteQuery = "(" + sites
-          .map(function (s) { return "site:" + s.replace(/^site:/i, "").trim(); })
-          .join(" OR ") + ")";
-        parts.push(siteQuery);
-      }
-
       if (excludeInternships) {
         negativeParts.push(
           "-internship",
@@ -596,7 +599,14 @@ glassdoor.com"></textarea>
       } else if (operatorMode === "OR") {
         joiner = " OR ";
       }
-      var query = parts.join(joiner);
+      var allParts = [];
+      if (siteParts.length === 1) {
+        allParts.push(siteParts[0]);
+      } else if (siteParts.length > 1) {
+        allParts.push(siteParts.join(" OR "));
+      }
+      allParts = allParts.concat(parts);
+      var query = allParts.join(joiner);
       if (negativeParts.length) {
         query = query ? query + " " + negativeParts.join(" ") : negativeParts.join(" ");
       }
