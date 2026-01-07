@@ -144,6 +144,16 @@
       padding: 0.4rem 0.9rem;
       margin: 0;
       font-size: 0.92rem;
+      transition: all 0.2s ease;
+    }
+    .checkbox-row button.active {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    .query-warning {
+      color: #dc2626;
+      font-weight: 600;
     }
     .toolbar-row,
     .saved-queries__row {
@@ -286,7 +296,7 @@
     <header class="page-header">
       <h1>Search Builder</h1>
       <p class="subtitle">
-        Fill out the fields and hit <strong>Search</strong>. It’ll open Google, Bing, or DuckDuckGo with your Boolean query already filled in.
+        Fill out the fields and hit <strong>Search</strong>. It'll open Google or Bing with your Boolean query already filled in.
       </p>
     </header>
 
@@ -314,6 +324,11 @@
     <div class="grid">
       <section class="section-card">
         <label class="section-title" for="titles">Job titles (one per line)</label>
+        <div class="checkbox-row">
+          <label for="useIntitle">
+            <input type="checkbox" id="useIntitle" /> Prefer titles in page title (intitle:)
+          </label>
+        </div>
         <textarea id="titles" rows="8" placeholder="e.g.
 IT Project Manager
 Data Analyst
@@ -328,7 +343,7 @@ Staff Accountant"></textarea>
 
         <div class="checkbox-row">
           <label for="requireCompanies">
-            <input type="checkbox" id="requireCompanies" /> Make companies required
+            <input type="checkbox" id="requireCompanies" /> Require one of these companies
           </label>
         </div>
         <label for="companies">Specific companies</label>
@@ -336,18 +351,18 @@ Staff Accountant"></textarea>
 Microsoft
 Amazon
 Distinctly"></textarea>
-        <small>One per line or comma-separated. If 'Make companies required' is off, companies will be ignored.</small>
+        <small>One per line or comma-separated. If unchecked, companies are ignored.</small>
       </section>
       <section class="section-card">
         <h2 class="section-title">Target sites</h2>
         <small>Select common job boards or add your own domains below.</small>
         <div class="checkbox-row" id="sitePresetsRow">
-          <label><input type="checkbox" id="siteIndeed" /> indeed.com/jobs</label>
-          <label><input type="checkbox" id="siteLinkedIn" /> linkedin.com/jobs</label>
-          <label><input type="checkbox" id="siteDice" /> dice.com/jobs</label>
-          <label><input type="checkbox" id="siteBuiltIn" /> builtin.com/jobs</label>
-          <label><input type="checkbox" id="siteGoogleJobs" /> jobs.google.com</label>
-          <label><input type="checkbox" id="siteRobertHalf" /> roberthalf.com/us/en/jobs</label>
+          <label><input type="checkbox" id="siteIndeed" /> indeed.com</label>
+          <label><input type="checkbox" id="siteLinkedIn" /> linkedin.com</label>
+          <label><input type="checkbox" id="siteDice" /> dice.com</label>
+          <label><input type="checkbox" id="siteBuiltIn" /> builtin.com</label>
+          <label><input type="checkbox" id="siteGoogleJobs" /> jobs.google.com (limited)</label>
+          <label><input type="checkbox" id="siteRobertHalf" /> roberthalf.com</label>
         </div>
         <label for="sites">Custom sites (one per line)</label>
         <textarea id="sites" rows="5" placeholder="e.g.
@@ -355,6 +370,12 @@ linkedin.com
 indeed.com
 glassdoor.com"></textarea>
         <small>Examples: linkedin.com, indeed.com, glassdoor.com, etc.</small>
+        
+        <label for="excludeSites" style="margin-top: 1rem;">Exclude sites (one per line)</label>
+        <textarea id="excludeSites" rows="3" placeholder="e.g.
+linkedin.com
+indeed.com"></textarea>
+        <small>These become -site:domain.com exclusions.</small>
       </section>
       <section class="section-card">
         <h2 class="section-title">Work mode &amp; location</h2>
@@ -377,7 +398,7 @@ glassdoor.com"></textarea>
           id="location"
           placeholder="City, region, or ZIP (e.g. Seattle, London, 94105)"
         />
-        <small>Useful for Hybrid or specific city: "London", "10001", etc.</small>
+        <small>Works best on job boards; Google Jobs may ignore location text.</small>
       </section>
       <section class="section-card">
         <h2 class="section-title">Exclusions</h2>
@@ -416,16 +437,24 @@ glassdoor.com"></textarea>
           <option value="week">Past week</option>
         </select>
         <small>
-          Uses Google's <code>tbs</code> parameter. Bing / DuckDuckGo will just ignore this and use the same query.
+          Uses Google's <code>tbs</code> parameter. Bing will just ignore this and use the same query.
         </small>
 
-        <label for="operatorMode">Operator mode (between groups)</label>
+        <label for="operatorMode">How groups are combined</label>
         <select id="operatorMode">
-          <option value="AND">AND (explicit)</option>
-          <option value="SPACE">Implicit AND (space)</option>
-          <option value="OR">OR</option>
+          <option value="SPACE">Standard (recommended)</option>
+          <option value="AND">Strict (explicit AND)</option>
+          <option value="SAFE">Google-safe (flattened)</option>
         </select>
-        <small>Controls how title/keywords/site/location groups are combined.</small>
+        <small>Google mostly ignores AND. Standard mode uses implicit AND (space).</small>
+        
+        <label for="inurlPresets" style="margin-top: 1rem;">URL patterns (optional)</label>
+        <div class="checkbox-row" id="inurlPresetsRow">
+          <label><input type="checkbox" id="inurlJobs" /> inurl:jobs</label>
+          <label><input type="checkbox" id="inurlCareers" /> inurl:careers</label>
+          <label><input type="checkbox" id="inurlApply" /> inurl:apply</label>
+        </div>
+        <small>These help target job-specific pages.</small>
       </section>
     </div>
 
@@ -438,7 +467,6 @@ glassdoor.com"></textarea>
           <select id="engine">
             <option value="google">Google</option>
             <option value="bing">Bing</option>
-            <option value="ddg">DuckDuckGo</option>
           </select>
         </div>
         <div class="button-group">
@@ -452,7 +480,11 @@ glassdoor.com"></textarea>
     <section class="section-card output-card">
       <label class="section-title" for="outputQuery">Generated Boolean query</label>
       <textarea id="outputQuery" rows="6" readonly></textarea>
-      <small>Live preview updates as you type.</small>
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.5rem;">
+        <small>Live preview updates as you type.</small>
+        <small id="queryLength" style="font-weight: 600; color: var(--text-muted);"></small>
+      </div>
+      <small id="queryWarning" style="color: #dc2626; display: none; font-weight: 600;"></small>
     </section>
   </div>
 
@@ -473,7 +505,8 @@ glassdoor.com"></textarea>
 
     function quoteIfNeeded(term) {
       if (!term) return "";
-      return /\s/.test(term) ? '"' + term + '"' : term;
+      var escaped = term.replace(/"/g, '\\"');
+      return /\s/.test(escaped) ? '"' + escaped + '"' : escaped;
     }
 
     function buildTimeRangeParam(timeRange) {
@@ -502,6 +535,7 @@ glassdoor.com"></textarea>
       var mustIncludeText = document.getElementById("mustInclude").value;
       var companiesText = document.getElementById("companies").value;
       var sitesText = document.getElementById("sites").value;
+      var excludeSitesText = document.getElementById("excludeSites") ? document.getElementById("excludeSites").value : "";
       var remote = document.getElementById("remote").checked;
       var hybrid = document.getElementById("hybrid").checked;
       var anywhere = document.getElementById("anywhere").checked;
@@ -511,6 +545,10 @@ glassdoor.com"></textarea>
       var siteBuiltIn = document.getElementById("siteBuiltIn") ? document.getElementById("siteBuiltIn").checked : false;
       var siteGoogleJobs = document.getElementById("siteGoogleJobs") ? document.getElementById("siteGoogleJobs").checked : false;
       var siteRobertHalf = document.getElementById("siteRobertHalf") ? document.getElementById("siteRobertHalf").checked : false;
+      var inurlJobs = document.getElementById("inurlJobs") ? document.getElementById("inurlJobs").checked : false;
+      var inurlCareers = document.getElementById("inurlCareers") ? document.getElementById("inurlCareers").checked : false;
+      var inurlApply = document.getElementById("inurlApply") ? document.getElementById("inurlApply").checked : false;
+      var useIntitle = document.getElementById("useIntitle") ? document.getElementById("useIntitle").checked : false;
       var locationText = document.getElementById("location").value;
       var excludeInternships = document.getElementById("excludeInternships").checked;
       var excludeNews = document.getElementById("excludeNews").checked;
@@ -522,13 +560,23 @@ glassdoor.com"></textarea>
       var negativeParts = [];
       var siteParts = [];
 
+      function deduplicateArray(arr) {
+        var seen = {};
+        return arr.filter(function(item) {
+          var key = item.toLowerCase().trim();
+          if (seen[key]) return false;
+          seen[key] = true;
+          return true;
+        });
+      }
+
       var presetSites = [];
-      if (siteIndeed) presetSites.push("indeed.com/jobs");
-      if (siteLinkedIn) presetSites.push("linkedin.com/jobs");
-      if (siteDice) presetSites.push("dice.com/jobs");
-      if (siteBuiltIn) presetSites.push("builtin.com/jobs");
+      if (siteIndeed) presetSites.push("indeed.com");
+      if (siteLinkedIn) presetSites.push("linkedin.com");
+      if (siteDice) presetSites.push("dice.com");
+      if (siteBuiltIn) presetSites.push("builtin.com");
       if (siteGoogleJobs) presetSites.push("jobs.google.com");
-      if (siteRobertHalf) presetSites.push("roberthalf.com/us/en/jobs");
+      if (siteRobertHalf) presetSites.push("roberthalf.com");
       var customSites = parseLines(sitesText);
       var sites = presetSites.concat(customSites);
       if (sites.length) {
@@ -541,34 +589,83 @@ glassdoor.com"></textarea>
       }
 
       var titles = parseLines(titlesText);
-      if (titles.length) {
-        parts.push("(" + titles.map(quoteIfNeeded).join(" OR ") + ")");
+      titles = deduplicateArray(titles);
+      if (titles.length === 1) {
+        if (useIntitle) {
+          parts.push("intitle:" + quoteIfNeeded(titles[0]));
+        } else {
+          parts.push(quoteIfNeeded(titles[0]));
+        }
+      } else if (titles.length > 1) {
+        if (useIntitle) {
+          var firstTitle = "intitle:" + quoteIfNeeded(titles[0]);
+          var otherTitles = titles.slice(1).map(quoteIfNeeded);
+          parts.push("(" + firstTitle + " OR " + otherTitles.join(" OR ") + ")");
+        } else {
+          parts.push("(" + titles.map(quoteIfNeeded).join(" OR ") + ")");
+        }
       }
 
       var mustInclude = parseList(mustIncludeText);
-      if (mustInclude.length) {
+      mustInclude = deduplicateArray(mustInclude);
+      if (mustInclude.length === 1) {
+        parts.push(quoteIfNeeded(mustInclude[0]));
+      } else if (mustInclude.length > 1) {
         parts.push("(" + mustInclude.map(quoteIfNeeded).join(" OR ") + ")");
       }
 
       var companies = parseList(companiesText);
-      if (requireCompanies && companies.length) {
+      companies = deduplicateArray(companies);
+      if (requireCompanies && companies.length === 1) {
+        parts.push(quoteIfNeeded(companies[0]));
+      } else if (requireCompanies && companies.length > 1) {
         parts.push("(" + companies.map(quoteIfNeeded).join(" OR ") + ")");
       }
 
       var workModeTokens = [];
-      if (remote) workModeTokens.push('"remote"', '"work from home"', '"WFH"');
-      if (hybrid) workModeTokens.push('"hybrid"');
-      if (anywhere) workModeTokens.push('"anywhere"', '"work from anywhere"');
-      if (workModeTokens.length) {
+      var mustIncludeLower = mustInclude.map(function(t) { return t.toLowerCase().trim(); });
+      if (remote && mustIncludeLower.indexOf("remote") === -1) {
+        workModeTokens.push('"remote"', '"work from home"', '"WFH"');
+      }
+      if (hybrid && mustIncludeLower.indexOf("hybrid") === -1) {
+        workModeTokens.push('"hybrid"');
+      }
+      if (anywhere && mustIncludeLower.indexOf("anywhere") === -1) {
+        workModeTokens.push('"anywhere"', '"work from anywhere"');
+      }
+      if (workModeTokens.length === 1) {
+        parts.push(workModeTokens[0]);
+      } else if (workModeTokens.length > 1) {
         parts.push("(" + workModeTokens.join(" OR ") + ")");
       }
 
       if (locationText.trim()) {
         var locList = parseList(locationText);
-        if (locList.length) {
+        locList = deduplicateArray(locList);
+        if (locList.length === 1) {
+          parts.push(quoteIfNeeded(locList[0]));
+        } else if (locList.length > 1) {
           parts.push("(" + locList.map(quoteIfNeeded).join(" OR ") + ")");
         }
       }
+
+      var inurlParts = [];
+      if (inurlJobs) inurlParts.push("inurl:jobs");
+      if (inurlCareers) inurlParts.push("inurl:careers");
+      if (inurlApply) inurlParts.push("inurl:apply");
+      if (inurlParts.length === 1) {
+        parts.push(inurlParts[0]);
+      } else if (inurlParts.length > 1) {
+        parts.push("(" + inurlParts.join(" OR ") + ")");
+      }
+
+      var excludeSites = parseLines(excludeSitesText);
+      excludeSites.forEach(function(s) {
+        var cleanSite = s.replace(/^-?site:/i, "").trim();
+        if (cleanSite) {
+          negativeParts.push("-site:" + cleanSite);
+        }
+      });
 
       if (excludeInternships) {
         negativeParts.push(
@@ -587,6 +684,7 @@ glassdoor.com"></textarea>
       }
 
       var extraExcludes = parseList(extraExcludeText);
+      extraExcludes = deduplicateArray(extraExcludes);
       extraExcludes.forEach(function (term) {
         term = term.replace(/^-+/, "");
         if (!term) return;
@@ -596,14 +694,14 @@ glassdoor.com"></textarea>
       var joiner = " AND ";
       if (operatorMode === "SPACE") {
         joiner = " ";
-      } else if (operatorMode === "OR") {
-        joiner = " OR ";
+      } else if (operatorMode === "SAFE") {
+        joiner = " ";
       }
       var allParts = [];
       if (siteParts.length === 1) {
         allParts.push(siteParts[0]);
       } else if (siteParts.length > 1) {
-        allParts.push(siteParts.join(" OR "));
+        allParts.push("(" + siteParts.join(" OR ") + ")");
       }
       allParts = allParts.concat(parts);
       var query = allParts.join(joiner);
@@ -638,6 +736,47 @@ glassdoor.com"></textarea>
         lastQuery = q || "";
         outputQuery.value = lastQuery;
         copyBtn.disabled = !lastQuery;
+        
+        var queryLengthEl = document.getElementById("queryLength");
+        var queryWarningEl = document.getElementById("queryWarning");
+        if (queryLengthEl) {
+          var len = lastQuery.length;
+          queryLengthEl.textContent = len + " characters";
+          if (len > 2048) {
+            queryLengthEl.style.color = "#dc2626";
+            queryWarningEl.textContent = "Query exceeds Google's 2,048 character limit. Search disabled.";
+            queryWarningEl.style.display = "block";
+            searchBtn.disabled = true;
+          } else if (len > 1800) {
+            queryLengthEl.style.color = "#f59e0b";
+            queryWarningEl.textContent = "Query may be too long for Google. Consider simplifying.";
+            queryWarningEl.style.display = "block";
+            searchBtn.disabled = false;
+          } else {
+            queryLengthEl.style.color = "var(--text-muted)";
+            queryWarningEl.style.display = "none";
+            searchBtn.disabled = false;
+          }
+        }
+        
+        updateExclusionChipStates();
+      }
+      
+      function updateExclusionChipStates() {
+        var excludeText = document.getElementById("extraExclude").value;
+        var excludeList = parseList(excludeText);
+        var chips = excludePresetsRow.querySelectorAll("button[data-exclude-chip]");
+        chips.forEach(function(chip) {
+          var chipValue = chip.getAttribute("data-exclude-chip");
+          var isActive = excludeList.some(function(t) {
+            return t.toLowerCase() === chipValue.toLowerCase();
+          });
+          if (isActive) {
+            chip.classList.add("active");
+          } else {
+            chip.classList.remove("active");
+          }
+        });
       }
 
       function getFormState() {
@@ -646,13 +785,18 @@ glassdoor.com"></textarea>
           mustInclude: document.getElementById("mustInclude").value,
           companies: document.getElementById("companies").value,
           requireCompanies: document.getElementById("requireCompanies").checked,
+          useIntitle: document.getElementById("useIntitle") ? document.getElementById("useIntitle").checked : false,
           sites: document.getElementById("sites").value,
+          excludeSites: document.getElementById("excludeSites") ? document.getElementById("excludeSites").value : "",
           siteIndeed: document.getElementById("siteIndeed") ? document.getElementById("siteIndeed").checked : false,
           siteLinkedIn: document.getElementById("siteLinkedIn") ? document.getElementById("siteLinkedIn").checked : false,
           siteDice: document.getElementById("siteDice") ? document.getElementById("siteDice").checked : false,
           siteBuiltIn: document.getElementById("siteBuiltIn") ? document.getElementById("siteBuiltIn").checked : false,
           siteGoogleJobs: document.getElementById("siteGoogleJobs") ? document.getElementById("siteGoogleJobs").checked : false,
           siteRobertHalf: document.getElementById("siteRobertHalf") ? document.getElementById("siteRobertHalf").checked : false,
+          inurlJobs: document.getElementById("inurlJobs") ? document.getElementById("inurlJobs").checked : false,
+          inurlCareers: document.getElementById("inurlCareers") ? document.getElementById("inurlCareers").checked : false,
+          inurlApply: document.getElementById("inurlApply") ? document.getElementById("inurlApply").checked : false,
           remote: document.getElementById("remote").checked,
           hybrid: document.getElementById("hybrid").checked,
           anywhere: document.getElementById("anywhere").checked,
@@ -671,13 +815,18 @@ glassdoor.com"></textarea>
         document.getElementById("mustInclude").value = state.mustInclude || "";
         document.getElementById("companies").value = state.companies || "";
         document.getElementById("requireCompanies").checked = !!state.requireCompanies;
+        if (document.getElementById("useIntitle")) document.getElementById("useIntitle").checked = !!state.useIntitle;
         document.getElementById("sites").value = state.sites || "";
+        if (document.getElementById("excludeSites")) document.getElementById("excludeSites").value = state.excludeSites || "";
         if (document.getElementById("siteIndeed")) document.getElementById("siteIndeed").checked = !!state.siteIndeed;
         if (document.getElementById("siteLinkedIn")) document.getElementById("siteLinkedIn").checked = !!state.siteLinkedIn;
         if (document.getElementById("siteDice")) document.getElementById("siteDice").checked = !!state.siteDice;
         if (document.getElementById("siteBuiltIn")) document.getElementById("siteBuiltIn").checked = !!state.siteBuiltIn;
         if (document.getElementById("siteGoogleJobs")) document.getElementById("siteGoogleJobs").checked = !!state.siteGoogleJobs;
         if (document.getElementById("siteRobertHalf")) document.getElementById("siteRobertHalf").checked = !!state.siteRobertHalf;
+        if (document.getElementById("inurlJobs")) document.getElementById("inurlJobs").checked = !!state.inurlJobs;
+        if (document.getElementById("inurlCareers")) document.getElementById("inurlCareers").checked = !!state.inurlCareers;
+        if (document.getElementById("inurlApply")) document.getElementById("inurlApply").checked = !!state.inurlApply;
         document.getElementById("remote").checked = !!state.remote;
         document.getElementById("hybrid").checked = !!state.hybrid;
         document.getElementById("anywhere").checked = !!state.anywhere;
@@ -685,7 +834,7 @@ glassdoor.com"></textarea>
         document.getElementById("excludeInternships").checked = state.excludeInternships !== false;
         document.getElementById("excludeNews").checked = state.excludeNews !== false;
         document.getElementById("extraExclude").value = state.extraExclude || "";
-        document.getElementById("operatorMode").value = state.operatorMode || "AND";
+        document.getElementById("operatorMode").value = state.operatorMode || "SPACE";
         engineSelect.value = state.engine || "google";
         timeRangeSelect.value = state.timeRange || "any";
       }
@@ -710,15 +859,26 @@ glassdoor.com"></textarea>
           mustInclude: "",
           companies: "",
           requireCompanies: false,
+          useIntitle: false,
           sites: "",
-          remote: document.getElementById("remote").defaultChecked,
+          excludeSites: "",
+          siteIndeed: false,
+          siteLinkedIn: false,
+          siteDice: false,
+          siteBuiltIn: false,
+          siteGoogleJobs: false,
+          siteRobertHalf: false,
+          inurlJobs: false,
+          inurlCareers: false,
+          inurlApply: false,
+          remote: false,
           hybrid: false,
           anywhere: false,
           location: "",
-          excludeInternships: document.getElementById("excludeInternships").defaultChecked,
-          excludeNews: document.getElementById("excludeNews").defaultChecked,
+          excludeInternships: false,
+          excludeNews: false,
           extraExclude: "",
-          operatorMode: "AND",
+          operatorMode: "SPACE",
           engine: "google",
           timeRange: "any"
         });
@@ -735,6 +895,11 @@ glassdoor.com"></textarea>
           alert("Query is empty – add at least one title or keyword.");
           return;
         }
+        
+        if (lastQuery.length > 2048) {
+          alert("Query exceeds Google's 2,048 character limit. Please simplify your search.");
+          return;
+        }
 
         var engine = engineSelect.value;
         var url = "";
@@ -746,8 +911,6 @@ glassdoor.com"></textarea>
           if (tbs) url += "&tbs=" + encodeURIComponent(tbs);
         } else if (engine === "bing") {
           url = "https://www.bing.com/search?q=" + encodeURIComponent(lastQuery);
-        } else if (engine === "ddg") {
-          url = "https://duckduckgo.com/?q=" + encodeURIComponent(lastQuery);
         }
 
         window.open(url, "_blank", "noopener,noreferrer");
@@ -776,11 +939,15 @@ glassdoor.com"></textarea>
         if (!chip) return;
         var field = document.getElementById("extraExclude");
         var list = parseList(field.value);
-        if (!list.some(function (t) { return t.toLowerCase() === chip.toLowerCase(); })) {
+        var chipLower = chip.toLowerCase();
+        var existingIndex = list.findIndex(function (t) { return t.toLowerCase() === chipLower; });
+        if (existingIndex >= 0) {
+          list.splice(existingIndex, 1);
+        } else {
           list.push(chip);
-          field.value = list.join(", ");
-          refreshQueryPreview();
         }
+        field.value = list.join(", ");
+        refreshQueryPreview();
       });
 
       saveBtn.addEventListener("click", function () {
@@ -828,8 +995,9 @@ glassdoor.com"></textarea>
       });
 
       var liveInputs = [
-        "titles","mustInclude","companies","requireCompanies","sites",
+        "titles","mustInclude","companies","requireCompanies","useIntitle","sites","excludeSites",
         "siteIndeed","siteLinkedIn","siteDice","siteBuiltIn","siteGoogleJobs","siteRobertHalf",
+        "inurlJobs","inurlCareers","inurlApply",
         "remote","hybrid","anywhere","location",
         "excludeInternships","excludeNews","extraExclude",
         "operatorMode","engine","timeRange"
@@ -843,8 +1011,25 @@ glassdoor.com"></textarea>
         }
       });
 
+      function updateEngineWarning() {
+        var subtitle = document.querySelector(".subtitle");
+        if (!subtitle) return;
+        var engine = engineSelect.value;
+        if (engine === "google") {
+          subtitle.innerHTML = 'Fill out the fields and hit <strong>Search</strong>. It\'ll open Google or Bing with your Boolean query already filled in. <strong>Google:</strong> best for breadth, weakest Boolean support.';
+        } else if (engine === "bing") {
+          subtitle.innerHTML = 'Fill out the fields and hit <strong>Search</strong>. It\'ll open Google or Bing with your Boolean query already filled in. <strong>Bing:</strong> stricter Boolean, fewer results.';
+        }
+      }
+      
+      engineSelect.addEventListener("change", function() {
+        updateEngineWarning();
+        refreshQueryPreview();
+      });
+      
       loadSavedQueries();
       refreshQueryPreview();
+      updateEngineWarning();
 
       function normalizeUrl(u) {
         try {
