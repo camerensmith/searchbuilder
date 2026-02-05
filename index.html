@@ -1168,7 +1168,7 @@ indeed.com"></textarea>
           var url = URL.createObjectURL(dataBlob);
           var link = document.createElement("a");
           link.href = url;
-          link.download = "searchbuilder-queries-" + new Date().toISOString().split('T')[0] + ".json";
+          link.download = "search-builder-queries-" + new Date().toISOString().split('T')[0] + ".json";
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
@@ -1348,9 +1348,13 @@ indeed.com"></textarea>
               e.preventDefault();
               e.stopPropagation();
               if (confirm("Remove bookmark for " + domain + "?")) {
-                list.splice(index, 1);
-                localStorage.setItem(CONFIG.STORAGE_KEYS.BOOKMARKS, JSON.stringify(list));
-                renderBookmarks();
+                var updatedList = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.BOOKMARKS) || "[]");
+                var idx = updatedList.indexOf(origin);
+                if (idx !== -1) {
+                  updatedList.splice(idx, 1);
+                  localStorage.setItem(CONFIG.STORAGE_KEYS.BOOKMARKS, JSON.stringify(updatedList));
+                  renderBookmarks();
+                }
               }
             };
             

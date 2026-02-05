@@ -1,6 +1,6 @@
 # Search Builder
 
-Quick Boolean query builder for sourcing roles. The page is fully client-side, so you can run it locally or from browser.
+Quick Boolean query builder for sourcing roles. The page is fully client-side, so you can run it locally or from a browser.
 
 ## Features
 
