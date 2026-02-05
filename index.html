@@ -518,9 +518,9 @@ indeed.com"></textarea>
      * Configuration constants
      */
     var CONFIG = {
-      QUERY_LIMIT_ERROR: 2048,
-      QUERY_LIMIT_WARNING: 1800,
-      DEBOUNCE_DELAY: 300,
+      MAX_QUERY_LENGTH: 2048,           // Google's hard limit for query length
+      QUERY_WARNING_THRESHOLD: 1800,   // Show warning when approaching limit
+      DEBOUNCE_DELAY_MS: 300,          // Milliseconds to wait before updating preview
       STORAGE_KEYS: {
         SAVED_QUERIES: 'savedQueries',
         BOOKMARKS: 'bookmarks'
@@ -822,17 +822,15 @@ indeed.com"></textarea>
         outputQuery.value = lastQuery;
         copyBtn.disabled = !lastQuery;
         
-        var queryLengthEl = document.getElementById("queryLength");
-        var queryWarningEl = document.getElementById("queryWarning");
         if (queryLengthEl) {
           var len = lastQuery.length;
           queryLengthEl.textContent = len + " characters";
-          if (len > CONFIG.QUERY_LIMIT_ERROR) {
+          if (len > CONFIG.MAX_QUERY_LENGTH) {
             queryLengthEl.style.color = "#dc2626";
             queryWarningEl.textContent = "Query exceeds Google's 2,048 character limit. Search disabled.";
             queryWarningEl.style.display = "block";
             searchBtn.disabled = true;
-          } else if (len > CONFIG.QUERY_LIMIT_WARNING) {
+          } else if (len > CONFIG.QUERY_WARNING_THRESHOLD) {
             queryLengthEl.style.color = "#f59e0b";
             queryWarningEl.textContent = "Query may be too long for Google. Consider simplifying.";
             queryWarningEl.style.display = "block";
@@ -1002,7 +1000,7 @@ indeed.com"></textarea>
           return;
         }
         
-        if (lastQuery.length > CONFIG.QUERY_LIMIT_ERROR) {
+        if (lastQuery.length > CONFIG.MAX_QUERY_LENGTH) {
           alert("Query exceeds Google's 2,048 character limit. Please simplify your search.");
           return;
         }
@@ -1087,9 +1085,9 @@ indeed.com"></textarea>
           saveNameInput.value = "";
           alert("Query saved successfully!");
         } catch (e) {
+          // Keep name in input field on error so user can retry
           alert("Error saving query: " + e.message);
           console.error("Error saving query:", e);
-          // Keep name in input field on error so user can retry
         }
       }
 
@@ -1149,7 +1147,7 @@ indeed.com"></textarea>
       ];
       
       // Create debounced version for text inputs
-      var debouncedRefresh = debounce(refreshQueryPreview, CONFIG.DEBOUNCE_DELAY);
+      var debouncedRefresh = debounce(refreshQueryPreview, CONFIG.DEBOUNCE_DELAY_MS);
       
       liveInputs.forEach(function (id) {
         var el = document.getElementById(id);
@@ -1175,7 +1173,8 @@ indeed.com"></textarea>
           var url = URL.createObjectURL(dataBlob);
           var link = document.createElement("a");
           link.href = url;
-          link.download = "search-builder-queries-" + new Date().toISOString().split('T')[0] + ".json";
+          var timestamp = new Date().toISOString().split('T')[0];
+          link.download = "search-builder-queries-" + timestamp + ".json";
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
@@ -1211,9 +1210,9 @@ indeed.com"></textarea>
               
               var shouldMerge = true;
               if (conflicts.length > 0) {
-                var pluralizedQueryWord = conflicts.length === 1 ? "query" : "queries";
+                var queryLabel = conflicts.length === 1 ? "query" : "queries";
                 shouldMerge = confirm(
-                  "Found " + conflicts.length + " existing " + pluralizedQueryWord + ":\n" +
+                  "Found " + conflicts.length + " existing " + queryLabel + ":\n" +
                   conflicts.slice(0, 5).join(", ") + (conflicts.length > 5 ? "..." : "") + "\n\n" +
                   "Click OK to overwrite, or Cancel to skip import."
                 );
