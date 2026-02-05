@@ -822,6 +822,8 @@ indeed.com"></textarea>
         outputQuery.value = lastQuery;
         copyBtn.disabled = !lastQuery;
         
+        var queryLengthEl = document.getElementById("queryLength");
+        var queryWarningEl = document.getElementById("queryWarning");
         if (queryLengthEl) {
           var len = lastQuery.length;
           queryLengthEl.textContent = len + " characters";
