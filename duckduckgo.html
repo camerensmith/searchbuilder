@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="https://i.postimg.cc/34M4mLpk/q.png" />
-  <title>Job Search Query Builder</title>
+  <title>Search Builder - DuckDuckGo</title>
   <style>
     :root {
-      --bg-page: #eef2ff;
+      --bg-page: #ffe4e9;
       --bg-card: #ffffff;
-      --border-card: #e5e7f1;
+      --border-card: #ffc5d1;
       --shadow-card: 0 20px 45px rgba(15, 23, 42, 0.08);
       --text-primary: #1f2937;
       --text-muted: #6b7280;
-      --accent: #1a73e8;
-      --accent-soft: rgba(26, 115, 232, 0.16);
+      --accent: #de5833;
+      --accent-soft: rgba(222, 88, 51, 0.16);
     }
     * { box-sizing: border-box; }
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #eef2ff 0%, #f9fbff 100%);
+      background: linear-gradient(135deg, #ffe4e9 0%, #fff5f7 100%);
       margin: 0;
       color: var(--text-primary);
     }
@@ -232,7 +232,7 @@
       border-color: var(--accent);
     }
     button.primary:hover:not(:disabled) {
-      background: #0f5ad7;
+      background: #c44d2b;
     }
     button:disabled {
       cursor: not-allowed;
@@ -323,13 +323,13 @@
 </head>
 <body>
   <div class="container">
-    <a href="duckduckgo.html" class="toggle-search-btn">
-      🦆 Switch to DuckDuckGo
+    <a href="index.html" class="toggle-search-btn">
+      🔍 Switch to Google/Bing
     </a>
     <header class="page-header">
-      <h1>Job Search Query Builder</h1>
+      <h1>Search Builder - DuckDuckGo</h1>
       <p class="subtitle">
-        Fill out the fields and hit <strong>Search</strong>. It'll open Google or Bing with your Boolean query already filled in.
+        Fill out the fields and hit <strong>Search</strong>. It'll open DuckDuckGo with your Boolean query. Use DDG-specific features like <strong>bangs (!)</strong> for power searching.
       </p>
     </header>
 
@@ -353,6 +353,45 @@
         <button id="deleteBtn" disabled>Delete</button>
         <button id="exportBtn" title="Export all saved queries to JSON file">Export All</button>
         <button id="importBtn" title="Import saved queries from JSON file">Import</button>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <h2 class="section-title">🔥 DuckDuckGo Power Features</h2>
+      
+      <h3 class="section-subtitle">Bangs (!) - Search specific sites directly</h3>
+      <label for="ddgBangs">Add bangs to your search (optional)</label>
+      <textarea id="ddgBangs" rows="3" placeholder="e.g.
+!gh for GitHub
+!so for Stack Overflow
+!w for Wikipedia"></textarea>
+      <small>Bangs like <strong>!gh</strong> (GitHub), <strong>!so</strong> (Stack Overflow), <strong>!w</strong> (Wikipedia), <strong>!yt</strong> (YouTube) search directly on those sites.</small>
+
+      <h3 class="section-subtitle">Company-specific search (custom bangs)</h3>
+      <label for="companyDomains">Companies to index (optional)</label>
+      <textarea id="companyDomains" rows="3" placeholder="e.g.
+microsoft.com
+amazon.com
+google.com"></textarea>
+      <small>These will be converted to site: operators for targeted searching.</small>
+
+      <div style="margin-top: 1.5rem; padding: 1rem; background: #fff5f7; border: 1px solid #ffc5d1; border-radius: 12px;">
+        <h3 class="section-subtitle" style="margin-top: 0;">✅ DuckDuckGo Operators That Work</h3>
+        <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted);">
+          <li><strong>site:</strong> - Works exactly like Google (e.g., site:reddit.com)</li>
+          <li><strong>"quotes"</strong> - Exact match search</li>
+          <li><strong>Boolean logic</strong> - OR (capitalized), AND (default), - (NOT)</li>
+          <li><strong>intitle:</strong> - Search in page titles (looser than Google)</li>
+          <li><strong>inurl:</strong> - Search in URLs</li>
+          <li><strong>Parentheses</strong> - Group terms (e.g., (site:reddit.com OR site:hn.com))</li>
+        </ul>
+        
+        <h3 class="section-subtitle">❌ What Doesn't Work</h3>
+        <ul style="margin: 0.5rem 0; padding-left: 1.5rem; color: var(--text-muted);">
+          <li><strong>filetype:</strong> - Not reliably supported (workaround: site:edu pdf "topic")</li>
+          <li><strong>cache:</strong> - Not supported</li>
+          <li><strong>related:</strong> - Not supported</li>
+        </ul>
       </div>
     </section>
 
@@ -464,15 +503,15 @@ indeed.com"></textarea>
       </section>
       <section class="section-card">
         <h2 class="section-title">Search filters</h2>
-        <label for="timeRange">Time range (Google-only)</label>
-        <select id="timeRange">
+        <label for="timeRange">Time range (not supported by DuckDuckGo)</label>
+        <select id="timeRange" disabled>
           <option value="any">Any time</option>
           <option value="24h">Past 24 hours</option>
           <option value="3days">Past 3 days</option>
           <option value="week">Past week</option>
         </select>
         <small>
-          Uses Google's <code>tbs</code> parameter. Bing will just ignore this and use the same query.
+          DuckDuckGo does not support time-based filtering like Google's <code>tbs</code> parameter.
         </small>
 
         <label for="operatorMode">How groups are combined</label>
@@ -481,7 +520,7 @@ indeed.com"></textarea>
           <option value="AND">Strict (explicit AND)</option>
           <option value="SAFE">Google-safe (flattened)</option>
         </select>
-        <small>Google mostly ignores AND. Standard mode uses implicit AND (space).</small>
+        <small>DuckDuckGo respects Boolean operators. Standard mode uses implicit AND (space).</small>
         
         <label for="inurlPresets" style="margin-top: 1rem;">URL patterns (optional)</label>
         <div class="checkbox-row" id="inurlPresetsRow">
@@ -495,13 +534,12 @@ indeed.com"></textarea>
 
     <section class="section-card actions-card">
       <h2 class="section-title">Run your search</h2>
-      <small>Recommended to use Google primarily, other search engines may not support the query in its entirety.</small>
+      <small>DuckDuckGo supports most Boolean operators. Note: filetype:, cache:, and related: operators may not work reliably.</small>
       <div class="actions-grid">
         <div>
           <label for="engine">Search engine</label>
           <select id="engine">
-            <option value="google">Google</option>
-            <option value="bing">Bing</option>
+            <option value="duckduckgo">DuckDuckGo</option>
           </select>
         </div>
         <div class="button-group">
@@ -551,7 +589,7 @@ indeed.com"></textarea>
      * Configuration constants
      */
     var CONFIG = {
-      MAX_QUERY_LENGTH: 2048,           // Google's hard limit for query length
+      MAX_QUERY_LENGTH: 2048,           // Search engine query length limit
       QUERY_WARNING_THRESHOLD: 1800,   // Show warning when approaching limit
       DEBOUNCE_DELAY_MS: 300,          // Milliseconds to wait before updating preview
       STORAGE_KEYS: {
@@ -862,12 +900,12 @@ indeed.com"></textarea>
           queryLengthEl.textContent = len + " characters";
           if (len > CONFIG.MAX_QUERY_LENGTH) {
             queryLengthEl.style.color = "#dc2626";
-            queryWarningEl.textContent = "Query exceeds Google's 2,048 character limit. Search disabled.";
+            queryWarningEl.textContent = "Query exceeds 2,048 character limit. Search disabled.";
             queryWarningEl.style.display = "block";
             searchBtn.disabled = true;
           } else if (len > CONFIG.QUERY_WARNING_THRESHOLD) {
             queryLengthEl.style.color = "#f59e0b";
-            queryWarningEl.textContent = "Query may be too long for Google. Consider simplifying.";
+            queryWarningEl.textContent = "Query may be too long. Consider simplifying.";
             queryWarningEl.style.display = "block";
             searchBtn.disabled = false;
           } else {
@@ -964,7 +1002,7 @@ indeed.com"></textarea>
         document.getElementById("excludeNews").checked = state.excludeNews !== false;
         document.getElementById("extraExclude").value = state.extraExclude || "";
         document.getElementById("operatorMode").value = state.operatorMode || "SPACE";
-        engineSelect.value = state.engine || "google";
+        engineSelect.value = state.engine || "duckduckgo";
         timeRangeSelect.value = state.timeRange || "any";
       }
 
@@ -1018,7 +1056,7 @@ indeed.com"></textarea>
           excludeNews: false,
           extraExclude: "",
           operatorMode: "SPACE",
-          engine: "google",
+          engine: "duckduckgo",
           timeRange: "any"
         });
         refreshQueryPreview();
@@ -1027,6 +1065,34 @@ indeed.com"></textarea>
       searchBtn.addEventListener("click", function () {
         var query = buildBooleanQuery();
         lastQuery = query || "";
+        
+        // Add DDG-specific features
+        var ddgBangsText = document.getElementById("ddgBangs") ? document.getElementById("ddgBangs").value : "";
+        var companyDomainsText = document.getElementById("companyDomains") ? document.getElementById("companyDomains").value : "";
+        
+        // Add bangs to the query if present
+        if (ddgBangsText.trim()) {
+          var bangs = ddgBangsText.split('\n').map(function(b) { return b.trim(); }).filter(Boolean);
+          if (bangs.length > 0) {
+            lastQuery = bangs.join(' ') + ' ' + lastQuery;
+          }
+        }
+        
+        // Add company domains as site: operators if present
+        if (companyDomainsText.trim()) {
+          var companyDomains = companyDomainsText.split('\n').map(function(c) { return c.trim(); }).filter(Boolean);
+          if (companyDomains.length > 0) {
+            var companySites = companyDomains.map(function(domain) {
+              return 'site:' + domain.replace(/^site:/i, '');
+            }).join(' OR ');
+            if (lastQuery) {
+              lastQuery = lastQuery + ' (' + companySites + ')';
+            } else {
+              lastQuery = companySites;
+            }
+          }
+        }
+        
         outputQuery.value = lastQuery;
         copyBtn.disabled = !lastQuery;
 
@@ -1036,7 +1102,7 @@ indeed.com"></textarea>
         }
         
         if (lastQuery.length > CONFIG.MAX_QUERY_LENGTH) {
-          alert("Query exceeds Google's 2,048 character limit. Please simplify your search.");
+          alert("Query exceeds search engine's character limit. Please simplify your search.");
           return;
         }
 
@@ -1050,6 +1116,8 @@ indeed.com"></textarea>
           if (tbs) url += "&tbs=" + encodeURIComponent(tbs);
         } else if (engine === "bing") {
           url = "https://www.bing.com/search?q=" + encodeURIComponent(lastQuery);
+        } else if (engine === "duckduckgo") {
+          url = "https://duckduckgo.com/?q=" + encodeURIComponent(lastQuery);
         }
 
         window.open(url, "_blank", "noopener,noreferrer");
@@ -1294,25 +1362,13 @@ indeed.com"></textarea>
         }
       });
 
-      function updateEngineWarning() {
-        var subtitle = document.querySelector(".subtitle");
-        if (!subtitle) return;
-        var engine = engineSelect.value;
-        if (engine === "google") {
-          subtitle.innerHTML = 'Fill out the fields and hit <strong>Search</strong>. It\'ll open Google or Bing with your Boolean query already filled in. <strong>Google:</strong> best for breadth, weakest Boolean support.';
-        } else if (engine === "bing") {
-          subtitle.innerHTML = 'Fill out the fields and hit <strong>Search</strong>. It\'ll open Google or Bing with your Boolean query already filled in. <strong>Bing:</strong> stricter Boolean, fewer results.';
-        }
-      }
       
       engineSelect.addEventListener("change", function() {
-        updateEngineWarning();
         refreshQueryPreview();
       });
       
       loadSavedQueries();
       refreshQueryPreview();
-      updateEngineWarning();
 
       /**
        * Normalize URL to origin format
