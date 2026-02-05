@@ -232,7 +232,7 @@
       border-color: var(--accent);
     }
     button.primary:hover:not(:disabled) {
-      background: #0f5ad7;
+      background: #c44d2b;
     }
     button:disabled {
       cursor: not-allowed;
@@ -589,7 +589,7 @@ indeed.com"></textarea>
      * Configuration constants
      */
     var CONFIG = {
-      MAX_QUERY_LENGTH: 2048,           // Google's hard limit for query length
+      MAX_QUERY_LENGTH: 2048,           // Search engine query length limit
       QUERY_WARNING_THRESHOLD: 1800,   // Show warning when approaching limit
       DEBOUNCE_DELAY_MS: 300,          // Milliseconds to wait before updating preview
       STORAGE_KEYS: {
@@ -900,12 +900,12 @@ indeed.com"></textarea>
           queryLengthEl.textContent = len + " characters";
           if (len > CONFIG.MAX_QUERY_LENGTH) {
             queryLengthEl.style.color = "#dc2626";
-            queryWarningEl.textContent = "Query exceeds Google's 2,048 character limit. Search disabled.";
+            queryWarningEl.textContent = "Query exceeds 2,048 character limit. Search disabled.";
             queryWarningEl.style.display = "block";
             searchBtn.disabled = true;
           } else if (len > CONFIG.QUERY_WARNING_THRESHOLD) {
             queryLengthEl.style.color = "#f59e0b";
-            queryWarningEl.textContent = "Query may be too long for Google. Consider simplifying.";
+            queryWarningEl.textContent = "Query may be too long. Consider simplifying.";
             queryWarningEl.style.display = "block";
             searchBtn.disabled = false;
           } else {
