@@ -503,15 +503,15 @@ indeed.com"></textarea>
       </section>
       <section class="section-card">
         <h2 class="section-title">Search filters</h2>
-        <label for="timeRange">Time range (Google-only)</label>
-        <select id="timeRange">
+        <label for="timeRange">Time range (not supported by DuckDuckGo)</label>
+        <select id="timeRange" disabled>
           <option value="any">Any time</option>
           <option value="24h">Past 24 hours</option>
           <option value="3days">Past 3 days</option>
           <option value="week">Past week</option>
         </select>
         <small>
-          Uses Google's <code>tbs</code> parameter. Bing will just ignore this and use the same query.
+          DuckDuckGo does not support time-based filtering like Google's <code>tbs</code> parameter.
         </small>
 
         <label for="operatorMode">How groups are combined</label>
@@ -520,7 +520,7 @@ indeed.com"></textarea>
           <option value="AND">Strict (explicit AND)</option>
           <option value="SAFE">Google-safe (flattened)</option>
         </select>
-        <small>Google mostly ignores AND. Standard mode uses implicit AND (space).</small>
+        <small>DuckDuckGo respects Boolean operators. Standard mode uses implicit AND (space).</small>
         
         <label for="inurlPresets" style="margin-top: 1rem;">URL patterns (optional)</label>
         <div class="checkbox-row" id="inurlPresetsRow">
@@ -1362,20 +1362,13 @@ indeed.com"></textarea>
         }
       });
 
-      function updateEngineWarning() {
-        // DuckDuckGo page - no need to update warnings since there's only one engine option
-        // The subtitle is already set correctly in the HTML
-        return;
-      }
       
       engineSelect.addEventListener("change", function() {
-        updateEngineWarning();
         refreshQueryPreview();
       });
       
       loadSavedQueries();
       refreshQueryPreview();
-      updateEngineWarning();
 
       /**
        * Normalize URL to origin format
