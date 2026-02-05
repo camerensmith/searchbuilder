@@ -282,9 +282,9 @@
       gap: 0.5rem;
     }
     .toggle-search-btn:hover {
-      background: #0f5ad7;
+      background: #c44d2b;
       transform: translateY(-1px);
-      box-shadow: 0 10px 20px rgba(26, 115, 232, 0.15);
+      box-shadow: 0 10px 20px rgba(222, 88, 51, 0.15);
     }
     @media (max-width: 768px) {
       .toggle-search-btn {
@@ -1002,7 +1002,7 @@ indeed.com"></textarea>
         document.getElementById("excludeNews").checked = state.excludeNews !== false;
         document.getElementById("extraExclude").value = state.extraExclude || "";
         document.getElementById("operatorMode").value = state.operatorMode || "SPACE";
-        engineSelect.value = state.engine || "google";
+        engineSelect.value = state.engine || "duckduckgo";
         timeRangeSelect.value = state.timeRange || "any";
       }
 
@@ -1056,7 +1056,7 @@ indeed.com"></textarea>
           excludeNews: false,
           extraExclude: "",
           operatorMode: "SPACE",
-          engine: "google",
+          engine: "duckduckgo",
           timeRange: "any"
         });
         refreshQueryPreview();
@@ -1363,14 +1363,9 @@ indeed.com"></textarea>
       });
 
       function updateEngineWarning() {
-        var subtitle = document.querySelector(".subtitle");
-        if (!subtitle) return;
-        var engine = engineSelect.value;
-        if (engine === "google") {
-          subtitle.innerHTML = 'Fill out the fields and hit <strong>Search</strong>. It\'ll open Google or Bing with your Boolean query already filled in. <strong>Google:</strong> best for breadth, weakest Boolean support.';
-        } else if (engine === "bing") {
-          subtitle.innerHTML = 'Fill out the fields and hit <strong>Search</strong>. It\'ll open Google or Bing with your Boolean query already filled in. <strong>Bing:</strong> stricter Boolean, fewer results.';
-        }
+        // DuckDuckGo page - no need to update warnings since there's only one engine option
+        // The subtitle is already set correctly in the HTML
+        return;
       }
       
       engineSelect.addEventListener("change", function() {
