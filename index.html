@@ -318,6 +318,8 @@
         <button id="saveBtn">Save</button>
         <button id="loadBtn" disabled>Load</button>
         <button id="deleteBtn" disabled>Delete</button>
+        <button id="exportBtn" title="Export all saved queries to JSON file">Export All</button>
+        <button id="importBtn" title="Import saved queries from JSON file">Import</button>
       </div>
     </section>
 
@@ -486,9 +488,50 @@ indeed.com"></textarea>
       </div>
       <small id="queryWarning" style="color: #dc2626; display: none; font-weight: 600;"></small>
     </section>
+
+    <section class="section-card" style="background: #f9fbff; border-style: dashed;">
+      <h2 class="section-title">💡 Tips &amp; Keyboard Shortcuts</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+        <div>
+          <strong style="display: block; margin-bottom: 0.5rem;">Keyboard Shortcuts:</strong>
+          <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
+            <li><kbd style="background: #fff; padding: 0.15rem 0.4rem; border-radius: 4px; border: 1px solid #d5dce8;">Ctrl/Cmd + Enter</kbd> - Run search</li>
+            <li><kbd style="background: #fff; padding: 0.15rem 0.4rem; border-radius: 4px; border: 1px solid #d5dce8;">Ctrl/Cmd + K</kbd> - Focus job titles</li>
+            <li><kbd style="background: #fff; padding: 0.15rem 0.4rem; border-radius: 4px; border: 1px solid #d5dce8;">Ctrl/Cmd + S</kbd> - Save query</li>
+          </ul>
+        </div>
+        <div>
+          <strong style="display: block; margin-bottom: 0.5rem;">Pro Tips:</strong>
+          <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
+            <li>Use Export/Import to backup your saved queries</li>
+            <li>Click exclusion chips to toggle them on/off</li>
+            <li>Save commonly-used job board URLs as bookmarks</li>
+            <li>Query preview updates smoothly as you type</li>
+          </ul>
+        </div>
+      </div>
+    </section>
   </div>
 
   <script>
+    /**
+     * Configuration constants
+     */
+    var CONFIG = {
+      MAX_QUERY_LENGTH: 2048,           // Google's hard limit for query length
+      QUERY_WARNING_THRESHOLD: 1800,   // Show warning when approaching limit
+      DEBOUNCE_DELAY_MS: 300,          // Milliseconds to wait before updating preview
+      STORAGE_KEYS: {
+        SAVED_QUERIES: 'savedQueries',
+        BOOKMARKS: 'bookmarks'
+      }
+    };
+
+    /**
+     * Parse text into lines, trimming and filtering empty lines
+     * @param {string} text - Input text to parse
+     * @returns {string[]} Array of non-empty trimmed lines
+     */
     function parseLines(text) {
       return text
         .split(/\r?\n/)
@@ -496,6 +539,11 @@ indeed.com"></textarea>
         .filter(Boolean);
     }
 
+    /**
+     * Parse text by lines or commas, trimming and filtering empty values
+     * @param {string} text - Input text to parse
+     * @returns {string[]} Array of non-empty trimmed values
+     */
     function parseList(text) {
       return text
         .split(/[\n,]+/)
@@ -503,12 +551,40 @@ indeed.com"></textarea>
         .filter(Boolean);
     }
 
+    /**
+     * Add quotes to a search term if it contains spaces
+     * @param {string} term - Search term
+     * @returns {string} Quoted term if needed, otherwise original term
+     */
     function quoteIfNeeded(term) {
       if (!term) return "";
       var escaped = term.replace(/"/g, '\\"');
       return /\s/.test(escaped) ? '"' + escaped + '"' : escaped;
     }
 
+    /**
+     * Debounce function to limit how often a function is called
+     * @param {Function} func - Function to debounce
+     * @param {number} wait - Milliseconds to wait
+     * @returns {Function} Debounced function
+     */
+    function debounce(func, wait) {
+      var timeout;
+      return function() {
+        var context = this;
+        var args = arguments;
+        clearTimeout(timeout);
+        timeout = setTimeout(function() {
+          func.apply(context, args);
+        }, wait);
+      };
+    }
+
+    /**
+     * Build Google time range parameter for search URL
+     * @param {string} timeRange - Time range option (any, 24h, week, 3days)
+     * @returns {string} Google tbs parameter value
+     */
     function buildTimeRangeParam(timeRange) {
       if (timeRange === "any") return "";
       if (timeRange === "24h") return "qdr:d";
@@ -530,6 +606,10 @@ indeed.com"></textarea>
       return "";
     }
 
+    /**
+     * Build the complete Boolean search query from all form inputs
+     * @returns {string} Formatted Boolean search query
+     */
     function buildBooleanQuery() {
       var titlesText = document.getElementById("titles").value;
       var mustIncludeText = document.getElementById("mustInclude").value;
@@ -724,6 +804,8 @@ indeed.com"></textarea>
       var saveBtn = document.getElementById("saveBtn");
       var loadBtn = document.getElementById("loadBtn");
       var deleteBtn = document.getElementById("deleteBtn");
+      var exportBtn = document.getElementById("exportBtn");
+      var importBtn = document.getElementById("importBtn");
       var excludePresetsRow = document.getElementById("excludePresetsRow");
       var addBookmarkBtn = document.getElementById("addBookmarkBtn");
       var bookmarkUrlInput = document.getElementById("bookmarkUrl");
@@ -731,6 +813,9 @@ indeed.com"></textarea>
 
       var lastQuery = "";
 
+      /**
+       * Update the query preview and button states
+       */
       function refreshQueryPreview() {
         var q = buildBooleanQuery();
         lastQuery = q || "";
@@ -742,12 +827,12 @@ indeed.com"></textarea>
         if (queryLengthEl) {
           var len = lastQuery.length;
           queryLengthEl.textContent = len + " characters";
-          if (len > 2048) {
+          if (len > CONFIG.MAX_QUERY_LENGTH) {
             queryLengthEl.style.color = "#dc2626";
             queryWarningEl.textContent = "Query exceeds Google's 2,048 character limit. Search disabled.";
             queryWarningEl.style.display = "block";
             searchBtn.disabled = true;
-          } else if (len > 1800) {
+          } else if (len > CONFIG.QUERY_WARNING_THRESHOLD) {
             queryLengthEl.style.color = "#f59e0b";
             queryWarningEl.textContent = "Query may be too long for Google. Consider simplifying.";
             queryWarningEl.style.display = "block";
@@ -762,6 +847,9 @@ indeed.com"></textarea>
         updateExclusionChipStates();
       }
       
+      /**
+       * Update visual state of exclusion chips based on textarea content
+       */
       function updateExclusionChipStates() {
         var excludeText = document.getElementById("extraExclude").value;
         var excludeList = parseList(excludeText);
@@ -779,6 +867,10 @@ indeed.com"></textarea>
         });
       }
 
+      /**
+       * Get current form state for saving
+       * @returns {Object} Form state object
+       */
       function getFormState() {
         return {
           titles: document.getElementById("titles").value,
@@ -810,6 +902,10 @@ indeed.com"></textarea>
         };
       }
 
+      /**
+       * Set form state from saved data
+       * @param {Object} state - Form state object
+       */
       function setFormState(state) {
         document.getElementById("titles").value = state.titles || "";
         document.getElementById("mustInclude").value = state.mustInclude || "";
@@ -839,20 +935,30 @@ indeed.com"></textarea>
         timeRangeSelect.value = state.timeRange || "any";
       }
 
+      /**
+       * Load saved queries from localStorage and populate dropdown
+       */
       function loadSavedQueries() {
-        var saved = JSON.parse(localStorage.getItem("savedQueries") || "{}");
-        while (savedSelect.options.length > 1) savedSelect.remove(1);
-        Object.keys(saved).forEach(function (name) {
-          var opt = document.createElement("option");
-          opt.value = name;
-          opt.textContent = name;
-          savedSelect.appendChild(opt);
-        });
-        var hasSelection = savedSelect.value && saved[savedSelect.value];
-        loadBtn.disabled = !hasSelection;
-        deleteBtn.disabled = !hasSelection;
+        try {
+          var saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SAVED_QUERIES) || "{}");
+          while (savedSelect.options.length > 1) savedSelect.remove(1);
+          Object.keys(saved).forEach(function (name) {
+            var opt = document.createElement("option");
+            opt.value = name;
+            opt.textContent = name;
+            savedSelect.appendChild(opt);
+          });
+          var hasSelection = savedSelect.value && saved[savedSelect.value];
+          loadBtn.disabled = !hasSelection;
+          deleteBtn.disabled = !hasSelection;
+        } catch (e) {
+          console.error("Error loading saved queries:", e);
+        }
       }
 
+      /**
+       * Clear all form fields to their default state
+       */
       function clearForm() {
         setFormState({
           titles: "",
@@ -896,7 +1002,7 @@ indeed.com"></textarea>
           return;
         }
         
-        if (lastQuery.length > 2048) {
+        if (lastQuery.length > CONFIG.MAX_QUERY_LENGTH) {
           alert("Query exceeds Google's 2,048 character limit. Please simplify your search.");
           return;
         }
@@ -920,7 +1026,17 @@ indeed.com"></textarea>
         if (!lastQuery) return;
         if (navigator.clipboard && navigator.clipboard.writeText) {
           navigator.clipboard.writeText(lastQuery).then(
-            function () { alert("Query copied to clipboard!"); },
+            function () { 
+              var originalText = copyBtn.textContent;
+              copyBtn.textContent = "✓ Copied!";
+              copyBtn.style.background = "#10b981";
+              copyBtn.style.color = "#fff";
+              setTimeout(function() {
+                copyBtn.textContent = originalText;
+                copyBtn.style.background = "";
+                copyBtn.style.color = "";
+              }, 2000);
+            },
             function () { alert("Could not copy to clipboard, sorry 😅"); }
           );
         } else {
@@ -950,48 +1066,77 @@ indeed.com"></textarea>
         refreshQueryPreview();
       });
 
-      saveBtn.addEventListener("click", function () {
+      
+      /**
+       * Save current query with the given name
+       */
+      function saveQuery() {
         var name = (saveNameInput.value || "").trim();
         if (!name) {
           alert("Please provide a name for this query.");
           return;
         }
-        var saved = JSON.parse(localStorage.getItem("savedQueries") || "{}");
-        saved[name] = getFormState();
-        localStorage.setItem("savedQueries", JSON.stringify(saved));
-        loadSavedQueries();
-        savedSelect.value = name;
-        loadBtn.disabled = false;
-        deleteBtn.disabled = false;
-        alert("Saved!");
-      });
+        try {
+          var saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SAVED_QUERIES) || "{}");
+          saved[name] = getFormState();
+          localStorage.setItem(CONFIG.STORAGE_KEYS.SAVED_QUERIES, JSON.stringify(saved));
+          loadSavedQueries();
+          savedSelect.value = name;
+          loadBtn.disabled = false;
+          deleteBtn.disabled = false;
+          saveNameInput.value = "";
+          alert("Query saved successfully!");
+        } catch (e) {
+          // Keep name in input field on error so user can retry
+          alert("Error saving query: " + e.message);
+          console.error("Error saving query:", e);
+        }
+      }
+
+      saveBtn.addEventListener("click", saveQuery);
 
       savedSelect.addEventListener("change", function () {
-        var saved = JSON.parse(localStorage.getItem("savedQueries") || "{}");
-        var sel = savedSelect.value;
-        var has = sel && saved[sel];
-        loadBtn.disabled = !has;
-        deleteBtn.disabled = !has;
+        try {
+          var saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SAVED_QUERIES) || "{}");
+          var sel = savedSelect.value;
+          var has = sel && saved[sel];
+          loadBtn.disabled = !has;
+          deleteBtn.disabled = !has;
+        } catch (e) {
+          console.error("Error reading saved queries:", e);
+        }
       });
 
       loadBtn.addEventListener("click", function () {
-        var saved = JSON.parse(localStorage.getItem("savedQueries") || "{}");
-        var sel = savedSelect.value;
-        if (!sel || !saved[sel]) return;
-        setFormState(saved[sel]);
-        refreshQueryPreview();
+        try {
+          var saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SAVED_QUERIES) || "{}");
+          var sel = savedSelect.value;
+          if (!sel || !saved[sel]) return;
+          setFormState(saved[sel]);
+          refreshQueryPreview();
+        } catch (e) {
+          alert("Error loading query: " + e.message);
+          console.error("Error loading query:", e);
+        }
       });
 
       deleteBtn.addEventListener("click", function () {
-        var saved = JSON.parse(localStorage.getItem("savedQueries") || "{}");
-        var sel = savedSelect.value;
-        if (!sel || !saved[sel]) return;
-        delete saved[sel];
-        localStorage.setItem("savedQueries", JSON.stringify(saved));
-        loadSavedQueries();
-        savedSelect.value = "";
-        loadBtn.disabled = true;
-        deleteBtn.disabled = true;
+        try {
+          var saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SAVED_QUERIES) || "{}");
+          var sel = savedSelect.value;
+          if (!sel || !saved[sel]) return;
+          if (confirm("Delete saved query '" + sel + "'?")) {
+            delete saved[sel];
+            localStorage.setItem(CONFIG.STORAGE_KEYS.SAVED_QUERIES, JSON.stringify(saved));
+            loadSavedQueries();
+            savedSelect.value = "";
+            loadBtn.disabled = true;
+            deleteBtn.disabled = true;
+          }
+        } catch (e) {
+          alert("Error deleting query: " + e.message);
+          console.error("Error deleting query:", e);
+        }
       });
 
       var liveInputs = [
@@ -1002,12 +1147,117 @@ indeed.com"></textarea>
         "excludeInternships","excludeNews","extraExclude",
         "operatorMode","engine","timeRange"
       ];
+      
+      // Create debounced version for text inputs
+      var debouncedRefresh = debounce(refreshQueryPreview, CONFIG.DEBOUNCE_DELAY_MS);
+      
       liveInputs.forEach(function (id) {
         var el = document.getElementById(id);
-        var evt = (el.tagName === "TEXTAREA" || el.tagName === "INPUT") ? "input" : "change";
-        el.addEventListener(evt, refreshQueryPreview);
-        if (el.type === "checkbox") {
-          el.addEventListener("change", refreshQueryPreview);
+        if (!el) return;
+        
+        // Use debounced refresh for text inputs/textareas to improve performance
+        if (el.tagName === "TEXTAREA" || (el.tagName === "INPUT" && el.type === "text")) {
+          el.addEventListener("input", debouncedRefresh);
+        } else {
+          // Use immediate refresh for checkboxes and selects
+          var evt = (el.tagName === "SELECT" || el.type === "checkbox") ? "change" : "input";
+          el.addEventListener(evt, refreshQueryPreview);
+        }
+      });
+
+      
+      // Export saved queries
+      exportBtn.addEventListener("click", function() {
+        try {
+          var saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SAVED_QUERIES) || "{}");
+          var dataStr = JSON.stringify(saved, null, 2);
+          var dataBlob = new Blob([dataStr], {type: "application/json"});
+          var url = URL.createObjectURL(dataBlob);
+          var link = document.createElement("a");
+          link.href = url;
+          var timestamp = new Date().toISOString().split('T')[0];
+          link.download = "search-builder-queries-" + timestamp + ".json";
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        } catch (e) {
+          alert("Error exporting queries: " + e.message);
+          console.error("Error exporting queries:", e);
+        }
+      });
+      
+      // Import saved queries
+      importBtn.addEventListener("click", function() {
+        var input = document.createElement("input");
+        input.type = "file";
+        input.accept = "application/json,.json";
+        input.onchange = function(e) {
+          var file = e.target.files[0];
+          if (!file) return;
+          
+          var reader = new FileReader();
+          reader.onload = function(event) {
+            try {
+              var imported = JSON.parse(event.target.result);
+              if (typeof imported !== "object" || Array.isArray(imported)) {
+                alert("Invalid file format. Expected JSON object.");
+                return;
+              }
+              
+              var saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SAVED_QUERIES) || "{}");
+              var conflicts = Object.keys(imported).filter(function(key) {
+                return saved.hasOwnProperty(key);
+              });
+              
+              var shouldMerge = true;
+              if (conflicts.length > 0) {
+                var queryLabel = conflicts.length === 1 ? "query" : "queries";
+                shouldMerge = confirm(
+                  "Found " + conflicts.length + " existing " + queryLabel + ":\n" +
+                  conflicts.slice(0, 5).join(", ") + (conflicts.length > 5 ? "..." : "") + "\n\n" +
+                  "Click OK to overwrite, or Cancel to skip import."
+                );
+              }
+              
+              if (shouldMerge) {
+                var merged = Object.assign({}, saved, imported);
+                localStorage.setItem(CONFIG.STORAGE_KEYS.SAVED_QUERIES, JSON.stringify(merged));
+                loadSavedQueries();
+                alert("Imported " + Object.keys(imported).length + " queries successfully!");
+              }
+            } catch (e) {
+              alert("Error importing queries: " + e.message);
+              console.error("Error importing queries:", e);
+            }
+          };
+          reader.readAsText(file);
+        };
+        input.click();
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener("keydown", function(e) {
+        // Ctrl/Cmd + Enter to search
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+          e.preventDefault();
+          if (!searchBtn.disabled && lastQuery) {
+            searchBtn.click();
+          }
+        }
+        // Ctrl/Cmd + K to focus titles field
+        if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+          e.preventDefault();
+          document.getElementById("titles").focus();
+        }
+        // Ctrl/Cmd + S to save query (if name is filled)
+        if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+          e.preventDefault();
+          if (saveNameInput.value.trim()) {
+            saveQuery();
+          } else {
+            saveNameInput.focus();
+          }
         }
       });
 
@@ -1031,6 +1281,11 @@ indeed.com"></textarea>
       refreshQueryPreview();
       updateEngineWarning();
 
+      /**
+       * Normalize URL to origin format
+       * @param {string} u - URL to normalize
+       * @returns {string} Normalized URL origin or empty string if invalid
+       */
       function normalizeUrl(u) {
         try {
           if (!/^https?:\/\//i.test(u)) u = "https://" + u;
@@ -1040,6 +1295,12 @@ indeed.com"></textarea>
           return "";
         }
       }
+      
+      /**
+       * Extract domain from URL
+       * @param {string} u - URL to parse
+       * @returns {string} Domain name or empty string if invalid
+       */
       function domainFromUrl(u) {
         try {
           var url = new URL(u);
@@ -1048,30 +1309,85 @@ indeed.com"></textarea>
           return "";
         }
       }
+      
+      /**
+       * Render bookmarks list with delete buttons
+       */
       function renderBookmarks() {
-        var list = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-        bookmarkList.innerHTML = "";
-        list.forEach(function (origin) {
-          var a = document.createElement("a");
-          a.href = origin;
-          a.target = "_blank";
-          a.rel = "noopener noreferrer";
-          a.title = origin;
-          a.style.display = "inline-flex";
-          a.style.alignItems = "center";
-          a.style.gap = "0.25rem";
-          var img = document.createElement("img");
-          var domain = domainFromUrl(origin);
-          img.src = "https://www.google.com/s2/favicons?sz=32&domain=" + encodeURIComponent(domain);
-          img.width = 16;
-          img.height = 16;
-          img.alt = domain + " favicon";
-          var span = document.createElement("span");
-          span.textContent = domain;
-          a.appendChild(img);
-          a.appendChild(span);
-          bookmarkList.appendChild(a);
-        });
+        try {
+          var list = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.BOOKMARKS) || "[]");
+          bookmarkList.innerHTML = "";
+          list.forEach(function (origin, index) {
+            var wrapper = document.createElement("div");
+            wrapper.style.display = "inline-flex";
+            wrapper.style.alignItems = "center";
+            wrapper.style.gap = "0.25rem";
+            wrapper.style.background = "#f1f5ff";
+            wrapper.style.border = "1px solid #dbe3f8";
+            wrapper.style.borderRadius = "12px";
+            wrapper.style.padding = "0.45rem 0.5rem 0.45rem 0.75rem";
+            
+            var a = document.createElement("a");
+            a.href = origin;
+            a.target = "_blank";
+            a.rel = "noopener noreferrer";
+            a.title = origin;
+            a.style.display = "inline-flex";
+            a.style.alignItems = "center";
+            a.style.gap = "0.35rem";
+            a.style.textDecoration = "none";
+            a.style.color = "var(--text-primary)";
+            a.style.fontWeight = "500";
+            
+            var img = document.createElement("img");
+            var domain = domainFromUrl(origin);
+            img.src = "https://www.google.com/s2/favicons?sz=32&domain=" + encodeURIComponent(domain);
+            img.width = 16;
+            img.height = 16;
+            img.alt = domain + " favicon";
+            img.style.borderRadius = "50%";
+            img.style.background = "#fff";
+            
+            var span = document.createElement("span");
+            span.textContent = domain;
+            
+            a.appendChild(img);
+            a.appendChild(span);
+            
+            var deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "×";
+            deleteBtn.title = "Remove bookmark";
+            deleteBtn.style.background = "transparent";
+            deleteBtn.style.border = "none";
+            deleteBtn.style.color = "#6b7280";
+            deleteBtn.style.fontSize = "1.5rem";
+            deleteBtn.style.lineHeight = "1";
+            deleteBtn.style.padding = "0 0.25rem";
+            deleteBtn.style.margin = "0";
+            deleteBtn.style.cursor = "pointer";
+            deleteBtn.style.transition = "color 0.2s ease";
+            deleteBtn.onmouseover = function() { this.style.color = "#dc2626"; };
+            deleteBtn.onmouseout = function() { this.style.color = "#6b7280"; };
+            deleteBtn.onclick = function(e) {
+              e.preventDefault();
+              e.stopPropagation();
+              if (confirm("Remove bookmark for " + domain + "?")) {
+                var idx = list.indexOf(origin);
+                if (idx !== -1) {
+                  list.splice(idx, 1);
+                  localStorage.setItem(CONFIG.STORAGE_KEYS.BOOKMARKS, JSON.stringify(list));
+                  renderBookmarks();
+                }
+              }
+            };
+            
+            wrapper.appendChild(a);
+            wrapper.appendChild(deleteBtn);
+            bookmarkList.appendChild(wrapper);
+          });
+        } catch (e) {
+          console.error("Error rendering bookmarks:", e);
+        }
       }
       if (addBookmarkBtn) {
         addBookmarkBtn.addEventListener("click", function () {
@@ -1081,13 +1397,18 @@ indeed.com"></textarea>
             alert("Please enter a valid URL.");
             return;
           }
-          var list = JSON.parse(localStorage.getItem("bookmarks") || "[]");
-          if (list.indexOf(norm) === -1) {
-            list.push(norm);
-            localStorage.setItem("bookmarks", JSON.stringify(list));
+          try {
+            var list = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.BOOKMARKS) || "[]");
+            if (list.indexOf(norm) === -1) {
+              list.push(norm);
+              localStorage.setItem(CONFIG.STORAGE_KEYS.BOOKMARKS, JSON.stringify(list));
+            }
+            bookmarkUrlInput.value = "";
+            renderBookmarks();
+          } catch (e) {
+            alert("Error saving bookmark: " + e.message);
+            console.error("Error saving bookmark:", e);
           }
-          bookmarkUrlInput.value = "";
-          renderBookmarks();
         });
       }
       renderBookmarks();
