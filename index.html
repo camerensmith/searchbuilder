@@ -496,7 +496,7 @@ indeed.com"></textarea>
           <strong style="display: block; margin-bottom: 0.5rem;">Keyboard Shortcuts:</strong>
           <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.8;">
             <li><kbd style="background: #fff; padding: 0.15rem 0.4rem; border-radius: 4px; border: 1px solid #d5dce8;">Ctrl/Cmd + Enter</kbd> - Run search</li>
-            <li><kbd style="background: #fff; padding: 0.15rem 0.4rem; border-radius: 4px; border: 1px solid #d5dce8;">Ctrl/Cmd + K</kbd> - Focus job titles</li>
+            <li><kbd style="background: #fff; padding: 0.15rem 0.4rem; border-radius: 4px; border: 1px solid #d5dce8;">Ctrl/Cmd + K</kbd> - Focus job titles (may conflict with browser shortcuts)</li>
             <li><kbd style="background: #fff; padding: 0.15rem 0.4rem; border-radius: 4px; border: 1px solid #d5dce8;">Ctrl/Cmd + S</kbd> - Save query</li>
           </ul>
         </div>
@@ -1198,10 +1198,25 @@ indeed.com"></textarea>
               }
               
               var saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.SAVED_QUERIES) || "{}");
-              var merged = Object.assign({}, saved, imported);
-              localStorage.setItem(CONFIG.STORAGE_KEYS.SAVED_QUERIES, JSON.stringify(merged));
-              loadSavedQueries();
-              alert("Imported " + Object.keys(imported).length + " queries successfully!");
+              var conflicts = Object.keys(imported).filter(function(key) {
+                return saved.hasOwnProperty(key);
+              });
+              
+              var shouldMerge = true;
+              if (conflicts.length > 0) {
+                shouldMerge = confirm(
+                  "Found " + conflicts.length + " existing query/queries with the same name(s):\n" +
+                  conflicts.slice(0, 5).join(", ") + (conflicts.length > 5 ? "..." : "") + "\n\n" +
+                  "Click OK to overwrite, or Cancel to skip import."
+                );
+              }
+              
+              if (shouldMerge) {
+                var merged = Object.assign({}, saved, imported);
+                localStorage.setItem(CONFIG.STORAGE_KEYS.SAVED_QUERIES, JSON.stringify(merged));
+                loadSavedQueries();
+                alert("Imported " + Object.keys(imported).length + " queries successfully!");
+              }
             } catch (e) {
               alert("Error importing queries: " + e.message);
               console.error("Error importing queries:", e);
