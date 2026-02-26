@@ -264,34 +264,36 @@
       align-items: flex-end;
       justify-content: space-between;
     }
+    .nav-bar {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: flex-end;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
     .toggle-search-btn {
-      position: absolute;
-      top: 2rem;
-      right: 2rem;
-      padding: 0.6rem 1.2rem;
-      background: var(--accent);
-      color: #fff;
-      border: 1px solid var(--accent);
+      padding: 0.55rem 1.1rem;
+      background: #fff;
+      color: var(--text-primary);
+      border: 1px solid #d5dce8;
       border-radius: 12px;
       font-weight: 600;
+      font-size: 0.92rem;
       cursor: pointer;
       text-decoration: none;
-      transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.4rem;
     }
     .toggle-search-btn:hover {
-      background: #c44d2b;
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px var(--accent-soft);
       transform: translateY(-1px);
-      box-shadow: 0 10px 20px rgba(222, 88, 51, 0.15);
     }
-    @media (max-width: 768px) {
-      .toggle-search-btn {
-        position: static;
-        margin: 1rem auto 0;
-        display: flex;
-        width: fit-content;
+    @media (max-width: 680px) {
+      .nav-bar {
+        justify-content: center;
       }
     }
     .actions-grid > div:first-child {
@@ -323,9 +325,10 @@
 </head>
 <body>
   <div class="container">
-    <a href="duckduckgo.html" class="toggle-search-btn">
-      🦆 Switch to DuckDuckGo
-    </a>
+    <nav class="nav-bar">
+      <a href="duckduckgo.html" class="toggle-search-btn">🦆 DuckDuckGo</a>
+      <a href="linkedin.html" class="toggle-search-btn">🔵 LinkedIn Jobs</a>
+    </nav>
     <header class="page-header">
       <h1>Job Search Query Builder</h1>
       <p class="subtitle">
