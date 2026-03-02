@@ -311,6 +311,29 @@
       </section>
     </div>
 
+    <section class="section-card">
+      <h2 class="section-title">🚫 Exclude Companies</h2>
+      <small>Check the boxes to hide results from known pipeline-spam companies. These are appended as negative keywords (<code>-"Company"</code>) to your search.</small>
+      <div class="checkbox-row" id="excludePresets">
+        <label>
+          <input type="checkbox" class="exclude-preset" value="Jobgether" checked /> Jobgether
+        </label>
+        <label>
+          <input type="checkbox" class="exclude-preset" value="Ladders" checked /> Ladders
+        </label>
+        <label>
+          <input type="checkbox" class="exclude-preset" value="Lensa" checked /> Lensa
+        </label>
+      </div>
+      <label for="excludeCustom">Additional companies to exclude <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label>
+      <input
+        type="text"
+        id="excludeCustom"
+        placeholder="e.g. Recruiter.com, Nexxt"
+      />
+      <small>Comma-separated list of company names to exclude from results.</small>
+    </section>
+
     <section class="section-card output-card">
       <label class="section-title" for="outputUrl">Generated LinkedIn search URL</label>
       <textarea id="outputUrl" rows="3" readonly placeholder="Fill in the fields above to generate a URL…"></textarea>
@@ -326,6 +349,7 @@
         <li>Use <strong>Remote</strong> + <strong>Past 24 hours</strong> + <strong>Under 10 applicants</strong> to catch fresh, low-competition listings.</li>
         <li>The <strong>Under X applicants</strong> filter works best when combined with <strong>Easy Apply</strong>.</li>
         <li>Leave <strong>Location</strong> blank when using the <strong>Remote</strong> work type to get global results.</li>
+        <li>Use <strong>Exclude Companies</strong> to filter out pipeline-spam aggregators. Add any other recurring offenders in the custom field.</li>
         <li>You can bookmark the generated URL in your browser for quick daily searches.</li>
       </ul>
     </section>
@@ -339,6 +363,7 @@
       var timePostedEl = document.getElementById("timePosted");
       var applicantsEl = document.getElementById("applicants");
       var easyApplyEl  = document.getElementById("easyApply");
+      var excludeCustomEl = document.getElementById("excludeCustom");
       var outputEl    = document.getElementById("outputUrl");
       var searchBtn   = document.getElementById("searchBtn");
       var copyBtn     = document.getElementById("copyBtn");
@@ -374,10 +399,30 @@
         var applicants = applicantsEl.value;
         var easyApply  = easyApplyEl.checked;
 
+        // Collect companies to exclude from checkboxes
+        var excludeParts = [];
+        document.querySelectorAll(".exclude-preset:checked").forEach(function (cb) {
+          excludeParts.push('-"' + cb.value + '"');
+        });
+        // Collect custom companies to exclude
+        var customExcludes = excludeCustomEl.value.trim();
+        if (customExcludes) {
+          customExcludes.split(",").forEach(function (name) {
+            var trimmed = name.trim();
+            if (trimmed) excludeParts.push('-"' + trimmed + '"');
+          });
+        }
+
+        // Build the final keywords string with exclusions appended
+        var fullKeywords = keywords;
+        if (excludeParts.length > 0) {
+          fullKeywords = (fullKeywords ? fullKeywords + " " : "") + excludeParts.join(" ");
+        }
+
         var base = "https://www.linkedin.com/jobs/search/";
         var params = new URLSearchParams();
 
-        if (keywords) params.set("keywords", keywords);
+        if (fullKeywords) params.set("keywords", fullKeywords);
         if (location) params.set("location", location);
         if (workType)  params.set("f_WT", workType);
         if (timePosted) params.set("f_TPR", timePosted);
@@ -398,16 +443,21 @@
       function refresh() {
         var url = buildUrl();
         outputEl.value = url;
-        var hasKeywords = keywordsEl.value.trim().length > 0;
+        var hasKeywords = keywordsEl.value.trim().length > 0 ||
+          document.querySelectorAll(".exclude-preset:checked").length > 0 ||
+          excludeCustomEl.value.trim().length > 0;
         searchBtn.disabled = !hasKeywords;
         copyBtn.disabled = !hasKeywords;
       }
 
-      [keywordsEl, locationEl, workTypeEl, timePostedEl, applicantsEl].forEach(function (el) {
+      [keywordsEl, locationEl, workTypeEl, timePostedEl, applicantsEl, excludeCustomEl].forEach(function (el) {
         el.addEventListener("input", refresh);
         el.addEventListener("change", refresh);
       });
       easyApplyEl.addEventListener("change", refresh);
+      document.querySelectorAll(".exclude-preset").forEach(function (cb) {
+        cb.addEventListener("change", refresh);
+      });
 
       searchBtn.addEventListener("click", function () {
         var url = buildUrl();
