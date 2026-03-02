@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="https://i.postimg.cc/34M4mLpk/q.png" />
+  <title>Search Builder - LinkedIn Jobs</title>
+  <style>
+    :root {
+      --bg-page: #e8f0fb;
+      --bg-card: #ffffff;
+      --border-card: #c0d4f0;
+      --shadow-card: 0 20px 45px rgba(15, 23, 42, 0.08);
+      --text-primary: #1f2937;
+      --text-muted: #6b7280;
+      --accent: #0a66c2;
+      --accent-soft: rgba(10, 102, 194, 0.16);
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: linear-gradient(135deg, #e8f0fb 0%, #f5f9ff 100%);
+      margin: 0;
+      color: var(--text-primary);
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2.5rem 1.5rem 4rem;
+      min-height: 100vh;
+    }
+    .page-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .page-header h1 {
+      font-size: 2.25rem;
+      margin: 0 0 0.5rem;
+      font-weight: 700;
+    }
+    p.subtitle {
+      margin: 0 auto;
+      max-width: 680px;
+      color: var(--text-muted);
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+    .section-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-card);
+      border-radius: 18px;
+      padding: 1.6rem;
+      box-shadow: var(--shadow-card);
+      margin-bottom: 1.8rem;
+    }
+    .section-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 0 0 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .section-subtitle {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 1.2rem 0 0.75rem;
+      color: var(--text-primary);
+    }
+    label {
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.4rem;
+    }
+    label.section-title {
+      font-size: 1.15rem;
+      margin-bottom: 1rem;
+    }
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid #d5dce8;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 1rem;
+      margin-bottom: 0.65rem;
+      background: #f5f9ff;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    input[type="text"]:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background: #fff;
+    }
+    textarea {
+      width: 100%;
+      padding: 0.65rem 0.75rem;
+      border: 1px solid #d5dce8;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 1rem;
+      margin-bottom: 0.65rem;
+      background: #f5f9ff;
+      resize: vertical;
+      min-height: 90px;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      background: #fff;
+    }
+    small {
+      display: block;
+      color: var(--text-muted);
+      margin-bottom: 0.8rem;
+      line-height: 1.5;
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 1.8rem;
+    }
+    .grid-2 .section-card {
+      margin-bottom: 0;
+    }
+    .checkbox-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 0.9rem;
+    }
+    .checkbox-row label {
+      font-weight: 500;
+      background: #eef4fd;
+      border: 1px solid #c0d4f0;
+      border-radius: 999px;
+      padding: 0.35rem 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      transition: background 0.2s ease, border-color 0.2s ease;
+      cursor: pointer;
+      margin-bottom: 0;
+    }
+    .checkbox-row label:hover {
+      border-color: var(--accent);
+      background: rgba(10, 102, 194, 0.12);
+    }
+    .checkbox-row label input {
+      margin: 0;
+    }
+    button {
+      padding: 0.65rem 1.3rem;
+      border: 1px solid var(--accent);
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.15s ease;
+      background: #fff;
+      color: var(--accent);
+      margin: 0;
+    }
+    button.primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    button.primary:hover {
+      background: #004182;
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(10, 102, 194, 0.2);
+    }
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: center;
+    }
+    .output-card {
+      background: #f5f9ff;
+    }
+    .output-card textarea {
+      font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+      font-size: 0.9rem;
+      background: #fff;
+      min-height: 70px;
+    }
+    .nav-bar {
+      display: flex;
+      gap: 0.6rem;
+      justify-content: flex-end;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .nav-btn {
+      padding: 0.55rem 1.1rem;
+      background: #fff;
+      color: var(--text-primary);
+      border: 1px solid #d5dce8;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.15s ease;
+    }
+    .nav-btn:hover {
+      border-color: var(--accent);
+      box-shadow: 0 4px 12px rgba(10, 102, 194, 0.12);
+      transform: translateY(-1px);
+    }
+    @media (max-width: 680px) {
+      .container {
+        padding: 1.9rem 1rem 3rem;
+      }
+      .section-card {
+        padding: 1.3rem;
+      }
+      .nav-bar {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <nav class="nav-bar">
+      <a href="index.html" class="nav-btn">🔍 Google / Bing</a>
+      <a href="duckduckgo.html" class="nav-btn">🦆 DuckDuckGo</a>
+    </nav>
+
+    <header class="page-header">
+      <h1>🔵 LinkedIn Job Search Builder</h1>
+      <p class="subtitle">
+        Fill in the fields below to build a targeted LinkedIn job search URL. Hit <strong>Search on LinkedIn</strong> to open it directly, or copy the link.
+      </p>
+    </header>
+
+    <div class="grid-2">
+      <section class="section-card">
+        <label class="section-title" for="keywords">Job title / keywords</label>
+        <input
+          type="text"
+          id="keywords"
+          placeholder="e.g. Product Manager, Data Analyst"
+        />
+        <small>Enter one or more job titles or keywords. Multi-word phrases are searched as-is.</small>
+
+        <label for="location">Location <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label>
+        <input
+          type="text"
+          id="location"
+          placeholder="e.g. New York, Remote, United States"
+        />
+        <small>City, state, country, or leave blank for all locations.</small>
+      </section>
+
+      <section class="section-card">
+        <h2 class="section-title">⚙️ Filters</h2>
+
+        <label for="workType">Work type</label>
+        <select id="workType">
+          <option value="">Any</option>
+          <option value="2" selected>Remote</option>
+          <option value="3">Hybrid</option>
+          <option value="1">On-site</option>
+        </select>
+        <small>Maps to LinkedIn's built-in work type filter (<code>f_WT</code>).</small>
+
+        <label for="timePosted">Date posted</label>
+        <select id="timePosted">
+          <option value="">Any time</option>
+          <option value="r3600">Past hour</option>
+          <option value="r86400" selected>Past 24 hours</option>
+          <option value="r604800">Past week</option>
+          <option value="r2592000">Past month</option>
+        </select>
+        <small>Maps to LinkedIn's "Date Posted" filter (<code>f_TPR</code>).</small>
+
+        <label for="applicants">Applicant count</label>
+        <select id="applicants">
+          <option value="">Any</option>
+          <option value="under10">Under 10 applicants</option>
+          <option value="under25">Under 25 applicants</option>
+          <option value="under50">Under 50 applicants</option>
+          <option value="under100">Under 100 applicants</option>
+        </select>
+        <small>Fewer applicants means less competition. LinkedIn's "Early Applicant" and applicant-count filters are used where available.</small>
+
+        <div class="checkbox-row" style="margin-top: 0.4rem;">
+          <label for="easyApply">
+            <input type="checkbox" id="easyApply" /> Easy Apply
+          </label>
+        </div>
+        <small>Easy Apply jobs let you apply directly on LinkedIn (<code>f_AL=true</code>).</small>
+      </section>
+    </div>
+
+    <section class="section-card output-card">
+      <label class="section-title" for="outputUrl">Generated LinkedIn search URL</label>
+      <textarea id="outputUrl" rows="3" readonly placeholder="Fill in the fields above to generate a URL…"></textarea>
+      <div class="actions-row" style="margin-top: 0.75rem;">
+        <button class="primary" id="searchBtn" disabled>🔵 Search on LinkedIn</button>
+        <button id="copyBtn" disabled>📋 Copy URL</button>
+      </div>
+    </section>
+
+    <section class="section-card" style="background: #f5f9ff; border-style: dashed;">
+      <h2 class="section-title">💡 Tips</h2>
+      <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.9; color: var(--text-muted);">
+        <li>Use <strong>Remote</strong> + <strong>Past 24 hours</strong> + <strong>Under 10 applicants</strong> to catch fresh, low-competition listings.</li>
+        <li>The <strong>Under X applicants</strong> filter works best when combined with <strong>Easy Apply</strong>.</li>
+        <li>Leave <strong>Location</strong> blank when using the <strong>Remote</strong> work type to get global results.</li>
+        <li>You can bookmark the generated URL in your browser for quick daily searches.</li>
+      </ul>
+    </section>
+  </div>
+
+  <script>
+    (function () {
+      var keywordsEl  = document.getElementById("keywords");
+      var locationEl  = document.getElementById("location");
+      var workTypeEl  = document.getElementById("workType");
+      var timePostedEl = document.getElementById("timePosted");
+      var applicantsEl = document.getElementById("applicants");
+      var easyApplyEl  = document.getElementById("easyApply");
+      var outputEl    = document.getElementById("outputUrl");
+      var searchBtn   = document.getElementById("searchBtn");
+      var copyBtn     = document.getElementById("copyBtn");
+
+      /**
+       * Map the applicant-count select value to LinkedIn URL parameters.
+       * LinkedIn's "Early Applicant" filter (f_EA=true) targets jobs with very few
+       * applicants (typically under 10). The broader under-25/50/100 options append
+       * f_EA=true as well so that results still skew toward less-competitive listings.
+       *
+       * @param {string} value - Applicant count select value
+       * @returns {URLSearchParams} Params to merge into the search URL
+       */
+      function applicantParams(value) {
+        var p = new URLSearchParams();
+        if (value === "under10") {
+          p.set("f_EA", "true");
+        } else if (value === "under25") {
+          p.set("f_EA", "true");
+          p.set("f_JIYN", "true");
+        } else if (value === "under50") {
+          p.set("f_JIYN", "true");
+        } else if (value === "under100") {
+          p.set("f_AL", "true");
+        }
+        return p;
+      }
+
+      function buildUrl() {
+        var keywords  = keywordsEl.value.trim();
+        var location  = locationEl.value.trim();
+        var workType  = workTypeEl.value;
+        var timePosted = timePostedEl.value;
+        var applicants = applicantsEl.value;
+        var easyApply  = easyApplyEl.checked;
+
+        var base = "https://www.linkedin.com/jobs/search/";
+        var params = new URLSearchParams();
+
+        if (keywords) params.set("keywords", keywords);
+        if (location) params.set("location", location);
+        if (workType)  params.set("f_WT", workType);
+        if (timePosted) params.set("f_TPR", timePosted);
+        if (easyApply) params.set("f_AL", "true");
+
+        // Merge applicant-count params (may override f_AL if set above)
+        if (applicants) {
+          var ap = applicantParams(applicants);
+          ap.forEach(function (val, key) {
+            params.set(key, val);
+          });
+        }
+
+        var query = params.toString();
+        return query ? base + "?" + query : base;
+      }
+
+      function refresh() {
+        var url = buildUrl();
+        outputEl.value = url;
+        var hasKeywords = keywordsEl.value.trim().length > 0;
+        searchBtn.disabled = !hasKeywords;
+        copyBtn.disabled = !hasKeywords;
+      }
+
+      [keywordsEl, locationEl, workTypeEl, timePostedEl, applicantsEl].forEach(function (el) {
+        el.addEventListener("input", refresh);
+        el.addEventListener("change", refresh);
+      });
+      easyApplyEl.addEventListener("change", refresh);
+
+      searchBtn.addEventListener("click", function () {
+        var url = buildUrl();
+        if (url) window.open(url, "_blank", "noopener,noreferrer");
+      });
+
+      copyBtn.addEventListener("click", function () {
+        var url = buildUrl();
+        if (!url) return;
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(url).then(function () {
+            var orig = copyBtn.textContent;
+            copyBtn.textContent = "✅ Copied!";
+            setTimeout(function () { copyBtn.textContent = orig; }, 1800);
+          });
+        } else {
+          outputEl.select();
+          document.execCommand("copy");
+          var orig = copyBtn.textContent;
+          copyBtn.textContent = "✅ Copied!";
+          setTimeout(function () { copyBtn.textContent = orig; }, 1800);
+        }
+      });
+
+      // Keyboard shortcut: Ctrl/Cmd + Enter to search
+      document.addEventListener("keydown", function (e) {
+        if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
+          e.preventDefault();
+          if (!searchBtn.disabled) searchBtn.click();
+        }
+      });
+
+      refresh();
+    })();
+  </script>
+</body>
+</html>
