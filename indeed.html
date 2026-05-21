@@ -3,22 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/png" href="https://i.postimg.cc/34M4mLpk/q.png" />
-  <title>Search Builder - LinkedIn Jobs</title>
+  <title>Search Builder - Indeed Jobs</title>
   <style>
     :root {
-      --bg-page: #e8f0fb;
+      --bg-page: #eef4ff;
       --bg-card: #ffffff;
-      --border-card: #c0d4f0;
+      --border-card: #c8d7f4;
       --shadow-card: 0 20px 45px rgba(15, 23, 42, 0.08);
       --text-primary: #1f2937;
       --text-muted: #6b7280;
-      --accent: #0a66c2;
-      --accent-soft: rgba(10, 102, 194, 0.16);
+      --accent: #2557a7;
+      --accent-soft: rgba(37, 87, 167, 0.16);
     }
     * { box-sizing: border-box; }
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(135deg, #e8f0fb 0%, #f5f9ff 100%);
+      background: linear-gradient(135deg, #eef4ff 0%, #f8fbff 100%);
       margin: 0;
       color: var(--text-primary);
     }
@@ -60,12 +60,6 @@
       align-items: center;
       gap: 0.5rem;
     }
-    .section-subtitle {
-      font-size: 0.95rem;
-      font-weight: 600;
-      margin: 1.2rem 0 0.75rem;
-      color: var(--text-primary);
-    }
     label {
       font-weight: 600;
       display: block;
@@ -84,7 +78,7 @@
       font-family: inherit;
       font-size: 1rem;
       margin-bottom: 0.65rem;
-      background: #f5f9ff;
+      background: #f6f9ff;
       transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
     }
     input[type="text"]:focus,
@@ -102,7 +96,7 @@
       font-family: inherit;
       font-size: 1rem;
       margin-bottom: 0.65rem;
-      background: #f5f9ff;
+      background: #f6f9ff;
       resize: vertical;
       min-height: 90px;
       transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
@@ -136,8 +130,8 @@
     }
     .checkbox-row label {
       font-weight: 500;
-      background: #eef4fd;
-      border: 1px solid #c0d4f0;
+      background: #edf3ff;
+      border: 1px solid #c8d7f4;
       border-radius: 999px;
       padding: 0.35rem 0.85rem;
       display: flex;
@@ -149,7 +143,7 @@
     }
     .checkbox-row label:hover {
       border-color: var(--accent);
-      background: rgba(10, 102, 194, 0.12);
+      background: rgba(37, 87, 167, 0.12);
     }
     .checkbox-row label input {
       margin: 0;
@@ -172,9 +166,9 @@
       color: #fff;
     }
     button.primary:hover {
-      background: #004182;
+      background: #1d4482;
       transform: translateY(-1px);
-      box-shadow: 0 10px 20px rgba(10, 102, 194, 0.2);
+      box-shadow: 0 10px 20px rgba(37, 87, 167, 0.2);
     }
     button:disabled {
       opacity: 0.45;
@@ -189,7 +183,7 @@
       align-items: center;
     }
     .output-card {
-      background: #f5f9ff;
+      background: #f6f9ff;
     }
     .output-card textarea {
       font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
@@ -221,7 +215,7 @@
     }
     .nav-btn:hover {
       border-color: var(--accent);
-      box-shadow: 0 4px 12px rgba(10, 102, 194, 0.12);
+      box-shadow: 0 4px 12px rgba(37, 87, 167, 0.12);
       transform: translateY(-1px);
     }
     @media (max-width: 680px) {
@@ -242,13 +236,13 @@
     <nav class="nav-bar">
       <a href="index.html" class="nav-btn">🔍 Google / Bing</a>
       <a href="duckduckgo.html" class="nav-btn">🦆 DuckDuckGo</a>
-      <a href="indeed.html" class="nav-btn">🟦 Indeed Jobs</a>
+      <a href="linkedin.html" class="nav-btn">🔵 LinkedIn Jobs</a>
     </nav>
 
     <header class="page-header">
-      <h1>🔵 LinkedIn Job Search Builder</h1>
+      <h1>🟦 Indeed Job Search Builder</h1>
       <p class="subtitle">
-        Fill in the fields below to build a targeted LinkedIn job search URL. Hit <strong>Search on LinkedIn</strong> to open it directly, or copy the link.
+        Fill in the fields below to build a targeted Indeed job search URL. Use the generated link to jump straight into Indeed with your preferred filters already applied.
       </p>
     </header>
 
@@ -266,64 +260,75 @@
         <input
           type="text"
           id="location"
-          placeholder="e.g. New York, Remote, United States"
+          placeholder="e.g. Remote, Austin, TX, United States"
         />
-        <small>City, state, country, or leave blank for all locations.</small>
+        <small>City, state, ZIP code, or leave blank for broader results.</small>
       </section>
 
       <section class="section-card">
         <h2 class="section-title">⚙️ Filters</h2>
 
-        <label for="workType">Work type</label>
-        <select id="workType">
-          <option value="">Any</option>
-          <option value="2" selected>Remote</option>
-          <option value="3">Hybrid</option>
-          <option value="1">On-site</option>
-        </select>
-        <small>Maps to LinkedIn's built-in work type filter (<code>f_WT</code>).</small>
-
-        <label for="timePosted">Date posted</label>
-        <select id="timePosted">
-          <option value="">Any time</option>
-          <option value="r3600">Past hour</option>
-          <option value="r86400" selected>Past 24 hours</option>
-          <option value="r604800">Past week</option>
-          <option value="r2592000">Past month</option>
-        </select>
-        <small>Maps to LinkedIn's "Date Posted" filter (<code>f_TPR</code>).</small>
-
-        <label for="applicants">Applicant count</label>
-        <select id="applicants">
-          <option value="">Any</option>
-          <option value="under10">Under 10 applicants</option>
-          <option value="under25">Under 25 applicants</option>
-          <option value="under50">Under 50 applicants</option>
-          <option value="under100">Under 100 applicants</option>
-        </select>
-        <small>Fewer applicants means less competition. LinkedIn's "Early Applicant" and applicant-count filters are used where available.</small>
-
         <div class="checkbox-row" style="margin-top: 0.4rem;">
-          <label for="easyApply">
-            <input type="checkbox" id="easyApply" /> Easy Apply
+          <label for="remoteOnly">
+            <input type="checkbox" id="remoteOnly" /> Remote only
           </label>
         </div>
-        <small>Easy Apply jobs let you apply directly on LinkedIn (<code>f_AL=true</code>).</small>
+        <small>Adds Indeed's remote-only filter (<code>remotejob=1</code>).</small>
+
+        <label for="datePosted">Date posted</label>
+        <select id="datePosted">
+          <option value="">Any time</option>
+          <option value="1" selected>Past 24 hours</option>
+          <option value="3">Past 3 days</option>
+          <option value="7">Past week</option>
+          <option value="14">Past 14 days</option>
+        </select>
+        <small>Maps to Indeed's <code>fromage</code> filter.</small>
+
+        <label for="radius">Distance</label>
+        <select id="radius">
+          <option value="">Default radius</option>
+          <option value="0">Exact location only</option>
+          <option value="5">Within 5 miles</option>
+          <option value="10">Within 10 miles</option>
+          <option value="25" selected>Within 25 miles</option>
+          <option value="50">Within 50 miles</option>
+          <option value="100">Within 100 miles</option>
+        </select>
+        <small>Maps to Indeed's <code>radius</code> filter. Keep blank to let Indeed choose.</small>
+
+        <label for="jobType">Job type</label>
+        <select id="jobType">
+          <option value="">Any</option>
+          <option value="fulltime">Full-time</option>
+          <option value="parttime">Part-time</option>
+          <option value="contract">Contract</option>
+          <option value="temporary">Temporary</option>
+          <option value="internship">Internship</option>
+        </select>
+        <small>Maps to Indeed's <code>jt</code> filter.</small>
+
+        <label for="sortBy">Sort by</label>
+        <select id="sortBy">
+          <option value="">Relevance</option>
+          <option value="date">Date</option>
+        </select>
+        <small>Choose <strong>Date</strong> to surface the newest roles first.</small>
       </section>
     </div>
 
     <section class="section-card">
       <h2 class="section-title">🚫 Exclude Companies</h2>
-      <small>Check the boxes to hide results from known pipeline-spam companies. These are appended as negative keywords (<code>-"Company"</code>) to your search.</small>
+      <small>Check the boxes to hide results from known aggregator or pipeline-spam companies. These are appended as negative keywords (<code>-&quot;Company&quot;</code>) to your search query.</small>
       <div class="checkbox-row" id="excludePresets">
         <label>
-          <input type="checkbox" class="exclude-preset" value="Jobgether" checked /> Jobgether
-        </label>
-        <label>
-          <input type="checkbox" class="exclude-preset" value="Ladders" checked /> Ladders
+          <input type="checkbox" class="exclude-preset" value="Jobot" checked /> Jobot
         </label>
         <label>
           <input type="checkbox" class="exclude-preset" value="Lensa" checked /> Lensa
+        </label>
+        <label>
+          <input type="checkbox" class="exclude-preset" value="Talentify.io" checked /> Talentify.io
         </label>
       </div>
       <label for="excludeCustom">Additional companies to exclude <span style="font-weight:400;color:var(--text-muted)">(optional)</span></label>
@@ -336,21 +341,21 @@
     </section>
 
     <section class="section-card output-card">
-      <label class="section-title" for="outputUrl">Generated LinkedIn search URL</label>
+      <label class="section-title" for="outputUrl">Generated Indeed search URL</label>
       <textarea id="outputUrl" rows="3" readonly placeholder="Fill in the fields above to generate a URL…"></textarea>
       <div class="actions-row" style="margin-top: 0.75rem;">
-        <button class="primary" id="searchBtn" disabled>🔵 Search on LinkedIn</button>
+        <button class="primary" id="searchBtn" disabled>🟦 Search on Indeed</button>
         <button id="copyBtn" disabled>📋 Copy URL</button>
       </div>
     </section>
 
-    <section class="section-card" style="background: #f5f9ff; border-style: dashed;">
+    <section class="section-card" style="background: #f6f9ff; border-style: dashed;">
       <h2 class="section-title">💡 Tips</h2>
       <ul style="margin: 0; padding-left: 1.5rem; line-height: 1.9; color: var(--text-muted);">
-        <li>Use <strong>Remote</strong> + <strong>Past 24 hours</strong> + <strong>Under 10 applicants</strong> to catch fresh, low-competition listings.</li>
-        <li>The <strong>Under X applicants</strong> filter works best when combined with <strong>Easy Apply</strong>.</li>
-        <li>Leave <strong>Location</strong> blank when using the <strong>Remote</strong> work type to get global results.</li>
-        <li>Use <strong>Exclude Companies</strong> to filter out pipeline-spam aggregators. Add any other recurring offenders in the custom field.</li>
+        <li>Use <strong>Remote only</strong> + <strong>Past 24 hours</strong> + <strong>Date</strong> to find fresh remote listings quickly.</li>
+        <li>If you already know the city, set a smaller <strong>Distance</strong> to cut down on noisy results.</li>
+        <li>Negative company filters are useful for removing aggregators and repeated scraped listings.</li>
+        <li>Indeed may adjust or ignore some filters depending on region and job category, so use the generated URL as a strong starting point.</li>
         <li>You can bookmark the generated URL in your browser for quick daily searches.</li>
       </ul>
     </section>
@@ -358,54 +363,32 @@
 
   <script>
     (function () {
-      var keywordsEl  = document.getElementById("keywords");
-      var locationEl  = document.getElementById("location");
-      var workTypeEl  = document.getElementById("workType");
-      var timePostedEl = document.getElementById("timePosted");
-      var applicantsEl = document.getElementById("applicants");
-      var easyApplyEl  = document.getElementById("easyApply");
+      var keywordsEl = document.getElementById("keywords");
+      var locationEl = document.getElementById("location");
+      var remoteOnlyEl = document.getElementById("remoteOnly");
+      var datePostedEl = document.getElementById("datePosted");
+      var radiusEl = document.getElementById("radius");
+      var jobTypeEl = document.getElementById("jobType");
+      var sortByEl = document.getElementById("sortBy");
       var excludeCustomEl = document.getElementById("excludeCustom");
-      var outputEl    = document.getElementById("outputUrl");
-      var searchBtn   = document.getElementById("searchBtn");
-      var copyBtn     = document.getElementById("copyBtn");
-
-      /**
-       * Map the applicant-count select value to LinkedIn URL parameters.
-       * LinkedIn's "Early Applicant" filter (f_EA=true) targets jobs with very few
-       * applicants (typically under 10). The broader under-25/50/100 options append
-       * f_EA=true as well so that results still skew toward less-competitive listings.
-       *
-       * @param {string} value - Applicant count select value
-       * @returns {URLSearchParams} Params to merge into the search URL
-       */
-      function applicantParams(value) {
-        var p = new URLSearchParams();
-        if (value === "under10") {
-          p.set("f_EA", "true");
-        } else if (value === "under25") {
-          p.set("f_EA", "true");
-        } else if (value === "under50") {
-          p.set("f_AL", "true");
-        } else if (value === "under100") {
-          p.set("f_AL", "true");
-        }
-        return p;
-      }
+      var outputEl = document.getElementById("outputUrl");
+      var searchBtn = document.getElementById("searchBtn");
+      var copyBtn = document.getElementById("copyBtn");
 
       function buildUrl() {
-        var keywords  = keywordsEl.value.trim();
-        var location  = locationEl.value.trim();
-        var workType  = workTypeEl.value;
-        var timePosted = timePostedEl.value;
-        var applicants = applicantsEl.value;
-        var easyApply  = easyApplyEl.checked;
+        var keywords = keywordsEl.value.trim();
+        var location = locationEl.value.trim();
+        var remoteOnly = remoteOnlyEl.checked;
+        var datePosted = datePostedEl.value;
+        var radius = radiusEl.value;
+        var jobType = jobTypeEl.value;
+        var sortBy = sortByEl.value;
 
-        // Collect companies to exclude from checkboxes
         var excludeParts = [];
         document.querySelectorAll(".exclude-preset:checked").forEach(function (cb) {
           excludeParts.push('-"' + cb.value + '"');
         });
-        // Collect custom companies to exclude
+
         var customExcludes = excludeCustomEl.value.trim();
         if (customExcludes) {
           customExcludes.split(",").forEach(function (name) {
@@ -414,28 +397,21 @@
           });
         }
 
-        // Build the final keywords string with exclusions appended
         var fullKeywords = keywords;
         if (excludeParts.length > 0) {
           fullKeywords = (fullKeywords ? fullKeywords + " " : "") + excludeParts.join(" ");
         }
 
-        var base = "https://www.linkedin.com/jobs/search/";
+        var base = "https://www.indeed.com/jobs";
         var params = new URLSearchParams();
 
-        if (fullKeywords) params.set("keywords", fullKeywords);
-        if (location) params.set("location", location);
-        if (workType)  params.set("f_WT", workType);
-        if (timePosted) params.set("f_TPR", timePosted);
-        if (easyApply) params.set("f_AL", "true");
-
-        // Merge applicant-count params (may override f_AL if set above)
-        if (applicants) {
-          var ap = applicantParams(applicants);
-          ap.forEach(function (val, key) {
-            params.set(key, val);
-          });
-        }
+        if (fullKeywords) params.set("q", fullKeywords);
+        if (location) params.set("l", location);
+        if (remoteOnly) params.set("remotejob", "1");
+        if (datePosted) params.set("fromage", datePosted);
+        if (radius) params.set("radius", radius);
+        if (jobType) params.set("jt", jobType);
+        if (sortBy) params.set("sort", sortBy);
 
         var query = params.toString();
         return query ? base + "?" + query : base;
@@ -451,11 +427,11 @@
         copyBtn.disabled = !hasKeywords;
       }
 
-      [keywordsEl, locationEl, workTypeEl, timePostedEl, applicantsEl, excludeCustomEl].forEach(function (el) {
+      [keywordsEl, locationEl, datePostedEl, radiusEl, jobTypeEl, sortByEl, excludeCustomEl].forEach(function (el) {
         el.addEventListener("input", refresh);
         el.addEventListener("change", refresh);
       });
-      easyApplyEl.addEventListener("change", refresh);
+      remoteOnlyEl.addEventListener("change", refresh);
       document.querySelectorAll(".exclude-preset").forEach(function (cb) {
         cb.addEventListener("change", refresh);
       });
@@ -483,7 +459,6 @@
         }
       });
 
-      // Keyboard shortcut: Ctrl/Cmd + Enter to search
       document.addEventListener("keydown", function (e) {
         if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
           e.preventDefault();
