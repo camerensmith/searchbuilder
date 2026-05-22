@@ -11,6 +11,7 @@ Quick Boolean query builder for sourcing roles. The page is fully client-side, s
 - ⌨️ **Keyboard Shortcuts** - Speed up your workflow with keyboard shortcuts
 - 🎯 **Live Preview** - See your query update in real-time with optimized debouncing
 - 📊 **Character Counter** - Track query length with warnings for Google's limits
+- 🧭 **Dedicated Builders** - Jump between Google/Bing, DuckDuckGo, LinkedIn Jobs, and Indeed Jobs
 - 🎨 **Modern UI** - Clean, responsive design that works on all devices
 
 ## Keyboard Shortcuts
@@ -23,9 +24,10 @@ Quick Boolean query builder for sourcing roles. The page is fully client-side, s
 
 1. Fill in job titles, keywords, and other search criteria
 2. The Boolean query updates automatically in real-time
-3. Click "Search" to open Google/Bing with your query
-4. Save commonly used queries for quick access later
-5. Export your queries for backup or sharing
+3. Switch to the builder that matches the site you want to search
+4. Click "Search" to open the generated query or URL
+5. Save commonly used queries for quick access later
+6. Export your queries for backup or sharing
 
 ## Recent Improvements
 
